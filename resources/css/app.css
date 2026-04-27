@@ -1,0 +1,23 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import "datatables.net-bs5/css/dataTables.bootstrap5.css";
+@import "select2/dist/css/select2.css";
+@import "flatpickr/dist/flatpickr.min.css";
+@import "dropzone/dist/dropzone.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --primary: #5c6ac4;
+  --sidebar-bg: #1a1d2e;
+  --sidebar-text: #a0aec0;
+  --sidebar-active: #5c6ac4;
+  --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
