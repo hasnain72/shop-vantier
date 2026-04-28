@@ -17,7 +17,7 @@
 
   <div class="card shadow-sm border-0">
     <div class="card-body">
-      <form method="POST" action="{{ route('admin.collections.update', $collection) }}">
+      <form method="POST" action="{{ route('admin.collections.update', $collection) }}" enctype="multipart/form-data">
         @method('PUT')
         @include('admin.collections.form')
         <button class="btn btn-primary" type="submit">Save</button>

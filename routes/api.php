@@ -20,5 +20,15 @@ Route::prefix('v1')
                 Route::put('change-password', [\App\Http\Controllers\Api\V1\Auth\CustomerAuthController::class, 'changePassword'])->name('change-password');
             });
         });
+
+        // Products
+        Route::get('products/count', [\App\Http\Controllers\Api\V1\ProductController::class, 'count'])->name('products.count');
+        Route::get('products/{product}', [\App\Http\Controllers\Api\V1\ProductController::class, 'show'])->name('products.show');
+        Route::get('products', [\App\Http\Controllers\Api\V1\ProductController::class, 'index'])->name('products.index');
+
+        // Collections
+        Route::get('collections/{collection}/products', [\App\Http\Controllers\Api\V1\CollectionController::class, 'products'])->name('collections.products');
+        Route::get('collections/{collection}', [\App\Http\Controllers\Api\V1\CollectionController::class, 'show'])->name('collections.show');
+        Route::get('collections', [\App\Http\Controllers\Api\V1\CollectionController::class, 'index'])->name('collections.index');
     });
 

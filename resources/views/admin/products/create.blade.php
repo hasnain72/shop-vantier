@@ -10,7 +10,7 @@
 
   <div class="card shadow-sm border-0">
     <div class="card-body">
-      <form method="POST" action="{{ route('admin.products.store') }}">
+      <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
         @include('admin.products.form')
         <button class="btn btn-primary" type="submit">Create</button>
       </form>

@@ -3,58 +3,220 @@
 @section('title', 'Products')
 
 @section('content')
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-      <div class="h4 mb-0">Products</div>
-      <div class="text-secondary small">Manage products and variants.</div>
-    </div>
-    <a class="btn btn-primary" href="{{ route('admin.products.create') }}">New product</a>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <div class="h4 mb-0">Products</div>
+    <div class="text-secondary small">{{ $products->total() }} products total</div>
   </div>
+  <a class="btn btn-primary" href="{{ route('admin.products.create') }}">
+    <i class="bi bi-plus-lg me-1"></i>New product
+  </a>
+</div>
 
-  <div class="card shadow-sm border-0">
+{{-- Filters --}}
+<form method="GET" action="{{ route('admin.products.index') }}" id="filterForm">
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <input type="text" name="search" class="form-control form-control-sm" placeholder="Search title or SKU…"
+            value="{{ request('search') }}">
+        </div>
+        <div class="col-md-2">
+          <select name="status" class="form-select form-select-sm">
+            <option value="">All statuses</option>
+            @foreach(['active','draft','archived'] as $s)
+              <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="product_type_id" class="form-select form-select-sm">
+            <option value="">All types</option>
+            @foreach($productTypes as $pt)
+              <option value="{{ $pt->id }}" @selected(request('product_type_id') == $pt->id)>{{ $pt->name }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="vendor" class="form-select form-select-sm">
+            <option value="">All vendors</option>
+            @foreach($vendors as $v)
+              <option value="{{ $v }}" @selected(request('vendor') === $v)>{{ $v }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="sort" class="form-select form-select-sm">
+            <option value="">Newest</option>
+            <option value="oldest" @selected(request('sort') === 'oldest')>Oldest</option>
+            <option value="title-asc" @selected(request('sort') === 'title-asc')>Title A–Z</option>
+            <option value="title-desc" @selected(request('sort') === 'title-desc')>Title Z–A</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex gap-1">
+          <button class="btn btn-sm btn-primary w-50" type="submit"><i class="bi bi-search"></i></button>
+          <a class="btn btn-sm btn-outline-secondary w-50" href="{{ route('admin.products.index') }}"><i class="bi bi-x-lg"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+{{-- Bulk action form --}}
+<form method="POST" action="{{ route('admin.products.index') }}" id="bulkForm">
+  @csrf
+  @method('PATCH')
+
+  <div class="card border-0 shadow-sm">
+    {{-- Bulk toolbar --}}
+    <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-2" id="bulkToolbar" style="display:none!important;">
+      <span class="text-secondary small me-2" id="bulkCount">0 selected</span>
+      <button type="button" class="btn btn-sm btn-outline-success" onclick="bulkAction('publish')">Publish</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bulkAction('unpublish')">Unpublish</button>
+      <button type="button" class="btn btn-sm btn-outline-warning" onclick="bulkAction('archive')">Archive</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="bulkAction('delete')">Delete</button>
+      <input type="hidden" name="bulk_action" id="bulkActionInput">
+    </div>
+
     <div class="table-responsive">
-      <table class="table mb-0 align-middle">
+      <table class="table mb-0 align-middle" id="productsTable">
         <thead class="table-light">
           <tr>
+            <th style="width:36px;">
+              <input type="checkbox" class="form-check-input" id="selectAll">
+            </th>
+            <th style="width:56px;">Image</th>
             <th>Title</th>
             <th>Status</th>
-            <th>Slug</th>
-            <th>Variants</th>
+            <th>Inventory</th>
+            <th>Type</th>
+            <th>Vendor</th>
+            <th>Created</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           @forelse($products as $product)
             <tr>
-              <td class="fw-semibold">{{ $product->title }}</td>
+              <td>
+                <input type="checkbox" class="form-check-input row-check" name="product_ids[]" value="{{ $product->id }}">
+              </td>
+              <td>
+                @if($product->featured_image)
+                  <img src="{{ asset('storage/'.$product->featured_image) }}" class="rounded" width="40" height="40" style="object-fit:cover;">
+                @else
+                  <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                    <i class="bi bi-image text-secondary"></i>
+                  </div>
+                @endif
+              </td>
+              <td>
+                <a href="{{ route('admin.products.edit', $product) }}" class="fw-semibold text-decoration-none">
+                  {{ $product->title }}
+                </a>
+              </td>
               <td>
                 <span class="badge text-bg-{{ $product->status === 'active' ? 'success' : ($product->status === 'draft' ? 'secondary' : 'warning') }}">
-                  {{ $product->status }}
+                  {{ ucfirst($product->status) }}
                 </span>
               </td>
-              <td class="text-secondary">{{ $product->slug }}</td>
-              <td>{{ $product->variants_count }}</td>
+              <td>
+                @php $qty = $product->variants->sum('inventory_quantity') @endphp
+                <span class="{{ $qty < 5 ? 'text-danger fw-semibold' : 'text-secondary' }}">
+                  {{ $qty }} in stock
+                </span>
+              </td>
+              <td class="text-secondary small">{{ $product->productType?->name ?? '—' }}</td>
+              <td class="text-secondary small">{{ $product->vendor ?? '—' }}</td>
+              <td class="text-secondary small">{{ $product->created_at->format('M j, Y') }}</td>
               <td class="text-end">
                 <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.products.edit', $product) }}">Edit</a>
-                <form class="d-inline" method="POST" action="{{ route('admin.products.destroy', $product) }}" onsubmit="return confirm('Delete this product?')">
-                  @csrf
-                  @method('DELETE')
-                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                </form>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                  onclick="confirmDelete('{{ route('admin.products.destroy', $product) }}')">Delete</button>
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="5" class="text-center text-secondary py-4">No products yet.</td>
+              <td colspan="9" class="text-center text-secondary py-5">
+                No products found.
+                <a href="{{ route('admin.products.create') }}">Create your first product</a>
+              </td>
             </tr>
           @endforelse
         </tbody>
       </table>
     </div>
   </div>
+</form>
 
-  <div class="mt-3">
-    {{ $products->links() }}
-  </div>
+<div class="mt-3">
+  {{ $products->withQueryString()->links() }}
+</div>
+
+{{-- Hidden delete form --}}
+<form method="POST" id="deleteForm">
+  @csrf
+  @method('DELETE')
+</form>
 @endsection
 
+@push('scripts')
+<script>
+  // Select all checkboxes
+  const selectAll = document.getElementById('selectAll');
+  const bulkToolbar = document.getElementById('bulkToolbar');
+  const bulkCount = document.getElementById('bulkCount');
+
+  function updateBulkToolbar() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    if (checked.length > 0) {
+      bulkToolbar.style.display = 'flex';
+      bulkCount.textContent = checked.length + ' selected';
+    } else {
+      bulkToolbar.style.removeProperty('display');
+    }
+  }
+
+  selectAll.addEventListener('change', function () {
+    document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+    updateBulkToolbar();
+  });
+
+  document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', updateBulkToolbar);
+  });
+
+  function bulkAction(action) {
+    document.getElementById('bulkActionInput').value = action;
+    if (action === 'delete') {
+      Swal.fire({
+        title: 'Delete selected products?',
+        text: 'This cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Yes, delete',
+      }).then(result => { if (result.isConfirmed) document.getElementById('bulkForm').submit(); });
+    } else {
+      document.getElementById('bulkForm').submit();
+    }
+  }
+
+  function confirmDelete(url) {
+    Swal.fire({
+      title: 'Delete this product?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: 'Yes, delete',
+    }).then(result => {
+      if (result.isConfirmed) {
+        const f = document.getElementById('deleteForm');
+        f.action = url;
+        f.submit();
+      }
+    });
+  }
+</script>
+@endpush
