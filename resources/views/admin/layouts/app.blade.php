@@ -19,13 +19,14 @@
               Dashboard
             </a>
           </li>
-          <li class="nav-item"><a href="#" class="nav-link text-white">Orders</a></li>
+          <li class="nav-item"><a href="{{ route('admin.orders.index') }}" class="nav-link text-white {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">Orders</a></li>
           <li class="nav-item"><a href="{{ route('admin.products.index') }}" class="nav-link text-white {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">Products</a></li>
           <li class="nav-item"><a href="{{ route('admin.collections.index') }}" class="nav-link text-white {{ request()->routeIs('admin.collections.*') ? 'active' : '' }}">Collections</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white">Customers</a></li>
+          <li class="nav-item"><a href="{{ route('admin.customers.index') }}" class="nav-link text-white {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">Customers</a></li>
           <li class="nav-item"><a href="#" class="nav-link text-white">Discounts</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white">Inventory</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white">Shipping</a></li>
+          <li class="nav-item"><a href="{{ route('admin.inventory.index') }}" class="nav-link text-white {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">Inventory</a></li>
+          <li class="nav-item"><a href="{{ route('admin.locations.index') }}" class="nav-link text-white {{ request()->routeIs('admin.locations.*') ? 'active' : '' }}">Locations</a></li>
+          <li class="nav-item"><a href="{{ route('admin.shipping.index') }}" class="nav-link text-white {{ request()->routeIs('admin.shipping.*') ? 'active' : '' }}">Shipping</a></li>
           <li class="nav-item"><a href="#" class="nav-link text-white">Reports</a></li>
           <li class="nav-item"><a href="#" class="nav-link text-white">Settings</a></li>
         </ul>

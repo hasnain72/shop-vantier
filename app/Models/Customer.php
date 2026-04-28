@@ -59,5 +59,20 @@ class Customer extends Authenticatable
     {
         return $this->hasOne(CustomerAddress::class)->where('is_default', true);
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function scopeEnabled($query)
+    {
+        return $query->where('state', 'enabled');
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
+    }
 }
 

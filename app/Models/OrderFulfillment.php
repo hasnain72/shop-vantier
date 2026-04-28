@@ -38,4 +38,18 @@ class OrderFulfillment extends Model
     {
         return $this->belongsTo(InventoryLocation::class, 'location_id');
     }
+
+    public function getTrackingUrl(): string
+    {
+        if ($this->tracking_url) {
+            return $this->tracking_url;
+        }
+
+        if ($this->tracking_company && $this->tracking_number) {
+            return app(\App\Services\TrackingService::class)
+                ->getTrackingUrl($this->tracking_company, $this->tracking_number);
+        }
+
+        return '#';
+    }
 }
