@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderCancelled;
+use App\Events\OrderCreated;
+use App\Events\OrderFulfilled;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
@@ -98,6 +101,8 @@ class OrderController extends Controller
 
         $order = $this->service->createOrder($data);
 
+        OrderCreated::dispatch($order);
+
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order created.');
     }
@@ -138,6 +143,8 @@ class OrderController extends Controller
 
         $this->service->cancelOrder($order, $data['reason'], (bool) ($data['restock'] ?? false));
 
+        OrderCancelled::dispatch($order->fresh());
+
         return back()->with('success', 'Order cancelled.');
     }
 
@@ -151,7 +158,11 @@ class OrderController extends Controller
             'notify_customer'  => ['sometimes', 'boolean'],
         ]);
 
-        $this->service->fulfillOrder($order, $data);
+        $fulfillment = $this->service->fulfillOrder($order, $data);
+
+        if ($fulfillment) {
+            OrderFulfilled::dispatch($order->fresh(), $fulfillment);
+        }
 
         return back()->with('success', 'Order fulfilled.');
     }

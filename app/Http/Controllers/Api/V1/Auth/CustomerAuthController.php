@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Events\CustomerRegistered;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\ChangePasswordRequest;
@@ -27,6 +28,8 @@ class CustomerAuthController extends Controller
         ]);
 
         $token = $customer->createToken('customer', ['customer'])->plainTextToken;
+
+        CustomerRegistered::dispatch($customer);
 
         return ApiResponse::success([
             'customer' => new CustomerResource($customer->load('addresses')),

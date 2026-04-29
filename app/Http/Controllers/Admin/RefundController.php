@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderRefunded;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderRefund;
@@ -37,7 +38,7 @@ class RefundController extends Controller
             $data['note'] ?? ''
         );
 
-        OrderRefund::create([
+        $refund = OrderRefund::create([
             'order_id'          => $order->id,
             'user_id'           => auth()->id(),
             'note'              => $data['note'] ?? null,
@@ -45,6 +46,8 @@ class RefundController extends Controller
             'refund_line_items' => $data['refund_line_items'] ?? null,
             'transactions'      => [['id' => $transaction->id, 'amount' => $data['amount']]],
         ]);
+
+        OrderRefunded::dispatch($order->fresh(), $refund);
 
         if ($data['restock'] ?? false) {
             foreach ($data['refund_line_items'] ?? [] as $rli) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\CustomerInvited;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCustomerRequest;
 use App\Http\Requests\Admin\UpdateCustomerRequest;
@@ -120,7 +121,9 @@ class CustomerController extends Controller
     public function sendInvite(Customer $customer): RedirectResponse
     {
         $customer->update(['state' => 'invited']);
-        // TODO: dispatch invite email notification
+
+        $inviteUrl = url('/account/activate/' . $customer->id . '/' . sha1($customer->email . $customer->created_at));
+        CustomerInvited::dispatch($customer, $inviteUrl);
 
         return back()->with('success', 'Invite sent.');
     }

@@ -45,6 +45,18 @@ class CollectionController extends Controller
         return ApiResponse::success(new CollectionResource($collection));
     }
 
+    public function count(): JsonResponse
+    {
+        return ApiResponse::success(['count' => Collection::where('published', true)->count()]);
+    }
+
+    public function showByHandle(string $slug): JsonResponse
+    {
+        $collection = Collection::withCount('products')
+            ->where('slug', $slug)->where('published', true)->firstOrFail();
+        return ApiResponse::success(new CollectionResource($collection));
+    }
+
     public function products(Request $request, string $identifier): JsonResponse
     {
         $collection = Collection::where(function ($q) use ($identifier) {

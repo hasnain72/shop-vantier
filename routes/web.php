@@ -26,7 +26,43 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::prefix('settings')->as('settings.')->group(function () {
             Route::get('payments',  [\App\Http\Controllers\Admin\Settings\PaymentSettingsController::class, 'index'])->name('payments');
             Route::put('payments',  [\App\Http\Controllers\Admin\Settings\PaymentSettingsController::class, 'update'])->name('payments.update');
+            Route::get('store',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'show'])->name('store');
+            Route::put('store',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'update'])->name('store.update');
+            Route::get('taxes',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'taxes'])->name('taxes');
+            Route::put('taxes',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'updateTaxes'])->name('taxes.update');
+            Route::get('notifications', [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'notifications'])->name('notifications');
+            Route::put('notifications', [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'updateNotifications'])->name('notifications.update');
+            Route::get('scripts',       [\App\Http\Controllers\Admin\Settings\ScriptTagController::class, 'index'])->name('scripts');
+            Route::put('scripts',       [\App\Http\Controllers\Admin\Settings\ScriptTagController::class, 'update'])->name('scripts.update');
+            Route::get('legal',         [\App\Http\Controllers\Admin\Settings\LegalController::class, 'index'])->name('legal');
+            Route::put('legal',         [\App\Http\Controllers\Admin\Settings\LegalController::class, 'update'])->name('legal.update');
+            Route::get('checkout',      [\App\Http\Controllers\Admin\Settings\CheckoutController::class, 'index'])->name('checkout');
+            Route::put('checkout',      [\App\Http\Controllers\Admin\Settings\CheckoutController::class, 'update'])->name('checkout.update');
         });
+
+        // Activity log
+        Route::get('activity', [\App\Http\Controllers\Admin\ActivityController::class, 'index'])->name('activity.index');
+
+        // Reports
+        Route::get('reports',            [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/sales',      [\App\Http\Controllers\Admin\ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('reports/products',   [\App\Http\Controllers\Admin\ReportController::class, 'products'])->name('reports.products');
+        Route::get('reports/customers',  [\App\Http\Controllers\Admin\ReportController::class, 'customers'])->name('reports.customers');
+        Route::get('reports/inventory',  [\App\Http\Controllers\Admin\ReportController::class, 'inventory'])->name('reports.inventory');
+
+        // Pages (CMS)
+        Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->names('pages');
+
+        // Blogs & Articles
+        Route::get('blogs',                                                       [\App\Http\Controllers\Admin\BlogController::class, 'index'])->name('blogs.index');
+        Route::post('blogs',                                                      [\App\Http\Controllers\Admin\BlogController::class, 'storeBlog'])->name('blogs.store');
+        Route::delete('blogs/{blog}',                                             [\App\Http\Controllers\Admin\BlogController::class, 'destroyBlog'])->name('blogs.destroy');
+        Route::get('blogs/{blog}/articles',                                       [\App\Http\Controllers\Admin\BlogController::class, 'articles'])->name('blogs.articles');
+        Route::get('blogs/{blog}/articles/create',                                [\App\Http\Controllers\Admin\BlogController::class, 'createArticle'])->name('blogs.articles.create');
+        Route::post('blogs/{blog}/articles',                                      [\App\Http\Controllers\Admin\BlogController::class, 'storeArticle'])->name('blogs.articles.store');
+        Route::get('blogs/{blog}/articles/{article}/edit',                        [\App\Http\Controllers\Admin\BlogController::class, 'editArticle'])->name('blogs.articles.edit');
+        Route::put('blogs/{blog}/articles/{article}',                             [\App\Http\Controllers\Admin\BlogController::class, 'updateArticle'])->name('blogs.articles.update');
+        Route::delete('blogs/{blog}/articles/{article}',                          [\App\Http\Controllers\Admin\BlogController::class, 'destroyArticle'])->name('blogs.articles.destroy');
 
         // Orders
         Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class)->except(['show']);
@@ -48,6 +84,10 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::post('customers/{customer}/deactivate', [\App\Http\Controllers\Admin\CustomerController::class, 'deactivate'])->name('customers.deactivate');
         Route::post('customers/{customer}/activate',   [\App\Http\Controllers\Admin\CustomerController::class, 'activate'])->name('customers.activate');
 
+        // Discounts
+        Route::resource('discounts', \App\Http\Controllers\Admin\DiscountController::class)->names('discounts');
+        Route::get('discounts/generate-code', [\App\Http\Controllers\Admin\DiscountController::class, 'generateCode'])->name('discounts.generate-code');
+
         // Shipping
         Route::get('shipping', [\App\Http\Controllers\Admin\ShippingController::class, 'index'])->name('shipping.index');
         Route::post('shipping/zones',          [\App\Http\Controllers\Admin\ShippingController::class, 'storeZone'])->name('shipping.zones.store');
@@ -65,6 +105,13 @@ Route::prefix('admin')->as('admin.')->group(function () {
 
         // Locations
         Route::resource('locations', \App\Http\Controllers\Admin\LocationController::class)->names('locations');
+
+        // Webhooks
+        Route::get('webhooks',                       [\App\Http\Controllers\Admin\WebhookController::class, 'index'])->name('webhooks.index');
+        Route::post('webhooks',                      [\App\Http\Controllers\Admin\WebhookController::class, 'store'])->name('webhooks.store');
+        Route::put('webhooks/{webhook}',             [\App\Http\Controllers\Admin\WebhookController::class, 'update'])->name('webhooks.update');
+        Route::delete('webhooks/{webhook}',          [\App\Http\Controllers\Admin\WebhookController::class, 'destroy'])->name('webhooks.destroy');
+        Route::patch('webhooks/{webhook}/secret',    [\App\Http\Controllers\Admin\WebhookController::class, 'regenerateSecret'])->name('webhooks.secret');
 
         Route::prefix('products/{product}')->as('products.')->group(function () {
             Route::get('variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'index'])->name('variants.index');

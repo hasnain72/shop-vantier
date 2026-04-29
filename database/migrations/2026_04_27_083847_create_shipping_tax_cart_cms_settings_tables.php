@@ -157,6 +157,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->string('secret');
             $table->timestamp('last_triggered_at')->nullable();
+            $table->unsignedSmallInteger('last_status_code')->nullable();
             $table->unsignedInteger('failure_count')->default(0);
             $table->timestamps();
         });

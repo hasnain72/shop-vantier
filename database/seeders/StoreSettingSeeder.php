@@ -20,6 +20,15 @@ class StoreSettingSeeder extends Seeder
             ['key' => 'order_prefix',       'value' => 'WAS'],
             ['key' => 'tax_rate',           'value' => '10'],
             ['key' => 'low_stock_threshold','value' => '5'],
+            ['key' => 'notification_email', 'value' => 'admin@watchstore.com'],
+
+            // Notification toggles
+            ['key' => 'notif_order_confirmation', 'value' => '1'],
+            ['key' => 'notif_order_shipped',      'value' => '1'],
+            ['key' => 'notif_abandoned_cart',     'value' => '0'],
+            ['key' => 'notif_low_stock',          'value' => '1'],
+            ['key' => 'notif_new_order',          'value' => '1'],
+            ['key' => 'notif_refund_confirmation','value' => '1'],
 
             // Payment gateways
             ['key' => 'gateway_stripe_enabled',       'value' => '0'],

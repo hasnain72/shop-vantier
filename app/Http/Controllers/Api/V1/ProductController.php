@@ -80,6 +80,16 @@ class ProductController extends Controller
         return ApiResponse::success(new ProductResource($product));
     }
 
+    public function showByHandle(string $slug): JsonResponse
+    {
+        $product = Product::with(['variants', 'images', 'collections'])
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        return ApiResponse::success(new ProductResource($product));
+    }
+
     public function count(): JsonResponse
     {
         $count = Product::where('status', 'active')->count();

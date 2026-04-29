@@ -21,6 +21,11 @@ class OrderRefund extends Model
         'transactions' => 'array',
     ];
 
+    public function getAmountAttribute(): float
+    {
+        return collect($this->transactions)->sum('amount');
+    }
+
     public function order()
     {
         return $this->belongsTo(Order::class);

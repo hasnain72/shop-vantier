@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\OrderCancelled;
+use App\Events\OrderCreated;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
@@ -37,6 +39,8 @@ class OrderController extends Controller
 
         $order = $this->service->createOrder($data);
 
+        OrderCreated::dispatch($order);
+
         return ApiResponse::success(
             new OrderResource($order->load(['lineItems', 'customer', 'transactions', 'fulfillments'])),
             'Order created',
@@ -71,6 +75,8 @@ class OrderController extends Controller
         }
 
         $this->service->cancelOrder($order, 'customer', false);
+
+        OrderCancelled::dispatch($order->fresh());
 
         return ApiResponse::success(new OrderResource($order->fresh()), 'Order cancelled');
     }
