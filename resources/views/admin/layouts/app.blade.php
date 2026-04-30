@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') — Vantier</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
       :root {
@@ -114,6 +117,13 @@
               class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.collections.*') ? 'active' : '' }}">
               <i class="fa-solid fa-layer-group fa-fw"></i>
               <span class="admin-label">Collections</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.product-types.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.product-types.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-tag fa-fw"></i>
+              <span class="admin-label">Product Types</span>
             </a>
           </li>
           <li>
@@ -322,6 +332,10 @@
       </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @stack('scripts')
     <script>
     (function () {

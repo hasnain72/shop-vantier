@@ -1,6 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+
+Route::get('/clear', function () {
+    // Clear cache
+   
+    Artisan::call('config:cache');
+
+    Artisan::call('cache:clear');
+
+    // Clear compiled views
+    Artisan::call('view:clear');
+
+     // Clear compiled views
+    Artisan::call('route:clear');
+
+    // Clear sessions
+
+    return 'Cache, views cleared successfully.';
+});
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,7 +58,18 @@ Route::prefix('admin')->as('admin.')->group(function () {
             Route::put('legal',         [\App\Http\Controllers\Admin\Settings\LegalController::class, 'update'])->name('legal.update');
             Route::get('checkout',      [\App\Http\Controllers\Admin\Settings\CheckoutController::class, 'index'])->name('checkout');
             Route::put('checkout',      [\App\Http\Controllers\Admin\Settings\CheckoutController::class, 'update'])->name('checkout.update');
+
+            // Country-specific tax rates
+            Route::post('tax-rates',              [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'storeTaxRate'])->name('tax-rates.store');
+            Route::put('tax-rates/{taxRate}',     [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'updateTaxRate'])->name('tax-rates.update');
+            Route::delete('tax-rates/{taxRate}',  [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'destroyTaxRate'])->name('tax-rates.destroy');
         });
+
+        // Product types
+        Route::get('product-types',                   [\App\Http\Controllers\Admin\ProductTypeController::class, 'index'])->name('product-types.index');
+        Route::post('product-types',                  [\App\Http\Controllers\Admin\ProductTypeController::class, 'store'])->name('product-types.store');
+        Route::put('product-types/{productType}',     [\App\Http\Controllers\Admin\ProductTypeController::class, 'update'])->name('product-types.update');
+        Route::delete('product-types/{productType}',  [\App\Http\Controllers\Admin\ProductTypeController::class, 'destroy'])->name('product-types.destroy');
 
         // Activity log
         Route::get('activity', [\App\Http\Controllers\Admin\ActivityController::class, 'index'])->name('activity.index');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\StoreSetting;
+use App\Models\TaxRate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -58,7 +59,7 @@ class StoreSettingsController extends Controller
         $settings = StoreSetting::whereIn('key', ['taxes_included', 'tax_shipping', 'tax_rate'])
             ->pluck('value', 'key');
 
-        $taxRates = StoreSetting::where('key', 'like', 'tax_rate_%')->get();
+        $taxRates = TaxRate::orderBy('country_code')->orderBy('province_code')->get();
 
         return view('admin.settings.taxes', compact('settings', 'taxRates'));
     }
@@ -73,6 +74,50 @@ class StoreSettingsController extends Controller
         }
 
         return back()->with('success', 'Tax settings saved.');
+    }
+
+    public function storeTaxRate(Request $request)
+    {
+        $data = $request->validate([
+            'country_code'  => 'required|string|size:2|uppercase',
+            'province_code' => 'nullable|string|max:10|uppercase',
+            'name'          => 'required|string|max:100',
+            'rate'          => 'required|numeric|min:0|max:100',
+        ]);
+
+        TaxRate::create([
+            'country_code'  => $data['country_code'],
+            'province_code' => $data['province_code'] ?: null,
+            'name'          => $data['name'],
+            'rate'          => $data['rate'] / 100,
+        ]);
+
+        return back()->with('success', 'Tax rate added.');
+    }
+
+    public function updateTaxRate(Request $request, TaxRate $taxRate)
+    {
+        $data = $request->validate([
+            'country_code'  => 'required|string|size:2|uppercase',
+            'province_code' => 'nullable|string|max:10|uppercase',
+            'name'          => 'required|string|max:100',
+            'rate'          => 'required|numeric|min:0|max:100',
+        ]);
+
+        $taxRate->update([
+            'country_code'  => $data['country_code'],
+            'province_code' => $data['province_code'] ?: null,
+            'name'          => $data['name'],
+            'rate'          => $data['rate'] / 100,
+        ]);
+
+        return back()->with('success', 'Tax rate updated.');
+    }
+
+    public function destroyTaxRate(TaxRate $taxRate)
+    {
+        $taxRate->delete();
+        return back()->with('success', 'Tax rate deleted.');
     }
 
     public function notifications()

@@ -306,7 +306,7 @@
   });
 
   // Intercept form submit to attach dropzone files
-  document.querySelector('form').addEventListener('submit', function (e) {
+  document.getElementById('productForm').addEventListener('submit', function (e) {
     if (dz.files.length > 0) {
       e.preventDefault();
       const form = this;

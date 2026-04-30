@@ -17,7 +17,7 @@
 
   <div class="card shadow-sm border-0 mb-3">
     <div class="card-body">
-      <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
+      <form id="productForm" method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
         @method('PUT')
         @include('admin.products.form')
         <button class="btn btn-primary" type="submit">Save</button>

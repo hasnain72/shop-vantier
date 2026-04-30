@@ -35,6 +35,13 @@ class DatabaseSeeder extends Seeder
 
             // 8. Discounts
             DiscountSeeder::class,
+
+            // 9. Tax rates & settings
+            TaxSeeder::class,
+
+            // 10. CMS content (no dependencies)
+            PageSeeder::class,
+            BlogSeeder::class,
         ]);
     }
 }
