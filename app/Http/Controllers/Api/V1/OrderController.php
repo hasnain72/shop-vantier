@@ -42,7 +42,7 @@ class OrderController extends Controller
         OrderCreated::dispatch($order);
 
         return ApiResponse::success(
-            new OrderResource($order->load(['lineItems', 'customer', 'transactions', 'fulfillments'])),
+            ['order' => new OrderResource($order->load(['lineItems', 'customer', 'transactions', 'fulfillments']))],
             'Order created',
             201
         );
@@ -59,7 +59,7 @@ class OrderController extends Controller
             ->when($request->user(), fn ($q, $customer) => $q->where('customer_id', $customer->id))
             ->firstOrFail();
 
-        return ApiResponse::success(new OrderResource($order));
+        return ApiResponse::success(['order' => new OrderResource($order)]);
     }
 
     public function cancel(Request $request, Order $order): JsonResponse
@@ -78,6 +78,6 @@ class OrderController extends Controller
 
         OrderCancelled::dispatch($order->fresh());
 
-        return ApiResponse::success(new OrderResource($order->fresh()), 'Order cancelled');
+        return ApiResponse::success(['order' => new OrderResource($order->fresh())], 'Order cancelled');
     }
 }

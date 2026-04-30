@@ -43,7 +43,7 @@ class CartResource extends JsonResource
             'total_price'       => $totalPrice,
             'total_discount'    => 0.0,
             'requires_shipping' => $this->requires_shipping,
-            'line_items'        => $items->values(),
+            'items'             => $items->values(),
         ];
     }
 }

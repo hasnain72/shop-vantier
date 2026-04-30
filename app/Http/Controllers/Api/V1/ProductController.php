@@ -55,7 +55,6 @@ class ProductController extends Controller
         $sortDir = $request->sort_direction === 'asc' ? 'asc' : 'desc';
 
         if ($sortBy === 'price') {
-            // Sort by minimum variant price
             $query->orderByRaw('(SELECT MIN(price) FROM product_variants WHERE product_id = products.id) ' . $sortDir);
         } else {
             $query->orderBy($sortBy, $sortDir);
@@ -63,7 +62,18 @@ class ProductController extends Controller
 
         $products = $query->paginate($limit);
 
-        return ApiResponse::paginated($products, ProductResource::class);
+        return response()->json([
+            'success' => true,
+            'data'    => ['products' => ProductResource::collection($products->items())],
+            'meta'    => [
+                'pagination' => [
+                    'total'        => $products->total(),
+                    'per_page'     => $products->perPage(),
+                    'current_page' => $products->currentPage(),
+                    'last_page'    => $products->lastPage(),
+                ],
+            ],
+        ]);
     }
 
     public function show(string $identifier): JsonResponse
@@ -77,7 +87,7 @@ class ProductController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        return ApiResponse::success(new ProductResource($product));
+        return ApiResponse::success(['product' => new ProductResource($product)]);
     }
 
     public function showByHandle(string $slug): JsonResponse
@@ -87,7 +97,7 @@ class ProductController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        return ApiResponse::success(new ProductResource($product));
+        return ApiResponse::success(['product' => new ProductResource($product)]);
     }
 
     public function count(): JsonResponse

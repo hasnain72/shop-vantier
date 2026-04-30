@@ -2,7 +2,8 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Discount;
+use App\Models\DiscountCode;
+use App\Models\PriceRule;
 use Tests\TestCase;
 
 class CartTest extends TestCase
@@ -179,7 +180,8 @@ class CartTest extends TestCase
         [$customer, $token] = $this->customerWithToken();
         $headers = $this->authHeaders($token);
 
-        Discount::factory()->create(['code' => 'SAVE10', 'type' => 'percentage', 'value' => 10]);
+        $rule = PriceRule::factory()->create(['value_type' => 'percentage', 'value' => 10]);
+        DiscountCode::factory()->create(['code' => 'SAVE10', 'price_rule_id' => $rule->id]);
 
         $this->postJson('/api/v1/cart/add', [
             'items' => [['variant_id' => $variant->id, 'quantity' => 1]],

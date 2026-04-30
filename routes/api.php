@@ -53,8 +53,8 @@ Route::prefix('v1')
         Route::get('collections/{collection}',           [\App\Http\Controllers\Api\V1\CollectionController::class, 'show'])->name('collections.show');
         Route::get('collections',                        [\App\Http\Controllers\Api\V1\CollectionController::class, 'index'])->name('collections.index');
 
-        // Cart (optional auth — works with token or session)
-        Route::middleware('auth:customer')->prefix('cart')->as('cart.')->group(function () {
+        // Cart (optional auth — works for both guests and authenticated customers)
+        Route::prefix('cart')->as('cart.')->group(function () {
             Route::get('/',              [\App\Http\Controllers\Api\V1\CartController::class, 'show'])->name('show');
             Route::post('add',           [\App\Http\Controllers\Api\V1\CartController::class, 'add'])->name('add');
             Route::post('update',        [\App\Http\Controllers\Api\V1\CartController::class, 'update'])->name('update');
@@ -63,9 +63,6 @@ Route::prefix('v1')
             Route::post('apply-discount',[\App\Http\Controllers\Api\V1\CartController::class, 'applyDiscount'])->name('apply-discount');
             Route::get('shipping-rates', [\App\Http\Controllers\Api\V1\CartController::class, 'shippingRates'])->name('shipping-rates');
         });
-        // Guest cart (no auth required)
-        Route::post('cart/add',          [\App\Http\Controllers\Api\V1\CartController::class, 'add'])->name('cart.add.guest');
-        Route::get('cart',               [\App\Http\Controllers\Api\V1\CartController::class, 'show'])->name('cart.show.guest');
 
         // Checkout
         Route::post('checkout/validate', [\App\Http\Controllers\Api\V1\CheckoutController::class, 'validate'])->name('checkout.validate');

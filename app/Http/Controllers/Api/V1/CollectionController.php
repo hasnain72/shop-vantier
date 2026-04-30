@@ -28,7 +28,18 @@ class CollectionController extends Controller
 
         $collections = $query->orderBy('sort_position')->paginate($limit);
 
-        return ApiResponse::paginated($collections, CollectionResource::class);
+        return response()->json([
+            'success' => true,
+            'data'    => ['collections' => CollectionResource::collection($collections->items())],
+            'meta'    => [
+                'pagination' => [
+                    'total'        => $collections->total(),
+                    'per_page'     => $collections->perPage(),
+                    'current_page' => $collections->currentPage(),
+                    'last_page'    => $collections->lastPage(),
+                ],
+            ],
+        ]);
     }
 
     public function show(string $identifier): JsonResponse
@@ -39,10 +50,9 @@ class CollectionController extends Controller
                     ? $q->where('id', $identifier)
                     : $q->where('slug', $identifier);
             })
-            ->where('published', true)
             ->firstOrFail();
 
-        return ApiResponse::success(new CollectionResource($collection));
+        return ApiResponse::success(['collection' => new CollectionResource($collection)]);
     }
 
     public function count(): JsonResponse
@@ -53,8 +63,8 @@ class CollectionController extends Controller
     public function showByHandle(string $slug): JsonResponse
     {
         $collection = Collection::withCount('products')
-            ->where('slug', $slug)->where('published', true)->firstOrFail();
-        return ApiResponse::success(new CollectionResource($collection));
+            ->where('slug', $slug)->firstOrFail();
+        return ApiResponse::success(['collection' => new CollectionResource($collection)]);
     }
 
     public function products(Request $request, string $identifier): JsonResponse
@@ -72,6 +82,17 @@ class CollectionController extends Controller
             ->where('status', 'active')
             ->paginate($limit);
 
-        return ApiResponse::paginated($products, ProductResource::class);
+        return response()->json([
+            'success' => true,
+            'data'    => ['products' => ProductResource::collection($products->items())],
+            'meta'    => [
+                'pagination' => [
+                    'total'        => $products->total(),
+                    'per_page'     => $products->perPage(),
+                    'current_page' => $products->currentPage(),
+                    'last_page'    => $products->lastPage(),
+                ],
+            ],
+        ]);
     }
 }

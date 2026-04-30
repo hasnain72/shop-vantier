@@ -11,11 +11,11 @@ class CollectionFactory extends Factory
     {
         $title = fake()->words(2, true);
         return [
-            'title'     => ucwords($title),
-            'slug'      => Str::slug($title) . '-' . fake()->unique()->numberBetween(1000, 9999),
-            'body_html' => '<p>' . fake()->sentence() . '</p>',
-            'published' => true,
-            'sort_order'=> 'manual',
+            'title'       => ucwords($title),
+            'slug'        => Str::slug($title) . '-' . fake()->unique()->numberBetween(1000, 9999),
+            'description' => fake()->sentence(),
+            'published'   => true,
+            'sort_order'  => 'manual',
         ];
     }
 

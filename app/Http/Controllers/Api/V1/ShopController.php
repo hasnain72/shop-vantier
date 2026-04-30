@@ -17,18 +17,18 @@ class ShopController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => [
+            'data'    => ['shop' => [
                 'name'             => $s['store_name']        ?? config('app.name'),
                 'email'            => $s['store_email']       ?? null,
                 'currency'         => $currency,
                 'currency_symbol'  => $currencySymbols[$currency] ?? '$',
                 'timezone'         => $s['timezone']          ?? 'UTC',
                 'weight_unit'      => $s['weight_unit']       ?? 'kg',
-                'logo'             => $s['store_logo']        ? asset('storage/'.$s['store_logo']) : null,
-                'favicon'          => $s['store_favicon']     ? asset('storage/'.$s['store_favicon']) : null,
+                'logo'             => ($s['store_logo']    ?? null) ? asset('storage/'.($s['store_logo']    ?? '')) : null,
+                'favicon'          => ($s['store_favicon'] ?? null) ? asset('storage/'.($s['store_favicon'] ?? '')) : null,
                 'meta_title'       => $s['meta_title']        ?? null,
                 'meta_description' => $s['meta_description']  ?? null,
-            ],
+            ]],
         ]);
     }
 }

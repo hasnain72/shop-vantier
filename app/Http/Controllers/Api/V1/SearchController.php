@@ -14,18 +14,13 @@ class SearchController extends Controller
 {
     public function search(Request $request)
     {
+        $request->validate(['q' => 'required|string|min:1']);
+
         $q     = trim($request->get('q', ''));
         $type  = $request->get('type');
         $limit = min((int) $request->get('limit', 10), 50);
 
-        if (strlen($q) < 2) {
-            return response()->json(['success' => false, 'message' => 'Query too short.'], 422);
-        }
-
-        $products    = [];
-        $collections = [];
-        $pages       = [];
-        $articles    = [];
+        $results = [];
 
         if (!$type || $type === 'product') {
             $products = Product::where('status', 'active')
@@ -33,13 +28,15 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($p) => [
-                    'id'           => $p->id,
-                    'title'        => $p->title,
-                    'slug'         => $p->slug,
-                    'vendor'       => $p->vendor,
-                    'price_min'    => $p->variants()->min('price'),
-                    'image'        => $p->featured_image ? Storage::disk('public')->url($p->featured_image) : null,
+                    'type'      => 'product',
+                    'id'        => $p->id,
+                    'title'     => $p->title,
+                    'slug'      => $p->slug,
+                    'vendor'    => $p->vendor,
+                    'price_min' => $p->variants()->min('price'),
+                    'image'     => $p->featured_image ? Storage::disk('public')->url($p->featured_image) : null,
                 ])->all();
+            array_push($results, ...$products);
         }
 
         if (!$type || $type === 'collection') {
@@ -48,11 +45,13 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($c) => [
+                    'type'  => 'collection',
                     'id'    => $c->id,
                     'title' => $c->title,
                     'slug'  => $c->slug,
                     'image' => $c->image ? Storage::disk('public')->url($c->image) : null,
                 ])->all();
+            array_push($results, ...$collections);
         }
 
         if (!$type || $type === 'page') {
@@ -61,11 +60,13 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($p) => [
+                    'type'         => 'page',
                     'id'           => $p->id,
                     'title'        => $p->title,
-                    'slug'         => $p->handle,
+                    'slug'         => $p->slug,
                     'body_excerpt' => strip_tags(substr($p->body_html ?? '', 0, 160)),
                 ])->all();
+            array_push($results, ...$pages);
         }
 
         if (!$type || $type === 'article') {
@@ -74,19 +75,19 @@ class SearchController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(fn ($a) => [
+                    'type'         => 'article',
                     'id'           => $a->id,
                     'title'        => $a->title,
                     'slug'         => $a->slug,
                     'body_excerpt' => strip_tags(substr($a->body_html ?? '', 0, 160)),
                     'published_at' => $a->published_at?->toIso8601String(),
                 ])->all();
+            array_push($results, ...$articles);
         }
-
-        $total = count($products) + count($collections) + count($pages) + count($articles);
 
         return response()->json([
             'success' => true,
-            'data'    => compact('products', 'collections', 'pages', 'articles', 'total'),
+            'data'    => ['results' => $results],
         ]);
     }
 }

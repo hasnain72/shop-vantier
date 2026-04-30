@@ -72,7 +72,7 @@ class CustomerAuthController extends Controller
         /** @var \App\Models\Customer $customer */
         $customer = $request->user();
 
-        return ApiResponse::success(new CustomerResource($customer->load('addresses')));
+        return ApiResponse::success(['customer' => new CustomerResource($customer->load('addresses'))]);
     }
 
     public function updateProfile(UpdateProfileRequest $request)
@@ -82,7 +82,7 @@ class CustomerAuthController extends Controller
 
         $customer->update($request->validated());
 
-        return ApiResponse::success(new CustomerResource($customer->refresh()->load('addresses')), 'Profile updated');
+        return ApiResponse::success(['customer' => new CustomerResource($customer->refresh()->load('addresses'))], 'Profile updated');
     }
 
     public function changePassword(ChangePasswordRequest $request)
