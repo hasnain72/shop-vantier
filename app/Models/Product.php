@@ -26,7 +26,6 @@ class Product extends Model
         'meta_title',
         'meta_description',
         'options',
-        'images',
         'featured_image',
         'has_only_default_variant',
         'requires_shipping',
@@ -38,7 +37,6 @@ class Product extends Model
         'tags' => 'array',
         'published_at' => 'datetime',
         'options' => 'array',
-        'images' => 'array',
         'has_only_default_variant' => 'boolean',
         'requires_shipping' => 'boolean',
         'taxable' => 'boolean',
@@ -54,7 +52,7 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function images()
+    public function productImages()
     {
         return $this->hasMany(ProductImage::class);
     }

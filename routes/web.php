@@ -17,10 +17,16 @@ Route::get('/clear', function () {
      // Clear compiled views
     Artisan::call('route:clear');
 
+
+     // Clear storage:link views
+    Artisan::call('storage:link');
+
     // Clear sessions
 
-    return 'Cache, views cleared successfully.';
+    return 'Cache, views ,link cleared successfully.';
 });
+
+
 
 Route::get('/', function () {
     return view('welcome');

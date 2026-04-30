@@ -22,8 +22,8 @@ class ProductResource extends JsonResource
             'published_at' => $this->published_at?->toISOString(),
             'created_at'   => $this->created_at?->toISOString(),
             'updated_at'   => $this->updated_at?->toISOString(),
-            'images'       => $this->whenLoaded('images', function () {
-                return $this->images->map(fn ($img) => [
+            'images'       => $this->whenLoaded('productImages', function () {
+                return $this->productImages->map(fn ($img) => [
                     'id'       => $img->id,
                     'src'      => Storage::disk('public')->url($img->src),
                     'alt'      => $img->alt,

@@ -24,12 +24,17 @@
       /* ── Sidebar ──────────────────────────────────────────────────── */
       #adminSidebar {
         width: var(--sidebar-w);
+        min-width: var(--sidebar-w);
         background: var(--sidebar-bg);
-        transition: width .18s ease;
+        transition: width .18s ease, min-width .18s ease;
         overflow-x: hidden;
+        overflow-y: auto;
         flex-shrink: 0;
+        height: 100vh;
+        position: sticky;
+        top: 0;
       }
-      #adminSidebar.is-collapsed { width: var(--sidebar-w-sm); }
+      #adminSidebar.is-collapsed { width: var(--sidebar-w-sm); min-width: var(--sidebar-w-sm); }
       #adminSidebar.is-collapsed .admin-label,
       #adminSidebar.is-collapsed .admin-brand-text,
       #adminSidebar.is-collapsed .admin-group-label,
@@ -43,8 +48,25 @@
       .nav-link i.fa-fw { width: 1.2rem; text-align: center; }
 
       /* sub-menu */
-      .submenu { list-style: none; padding-left: 2rem; margin: 0; }
-      .submenu .nav-link { font-size: .82rem; padding: .3rem .75rem; }
+      .submenu {
+        list-style: none;
+        padding-left: 1.5rem;
+        margin: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .3s ease;
+      }
+      .submenu.show {
+        max-height: 600px;
+      }
+      .submenu .nav-link {
+        font-size: .82rem;
+        padding: .3rem .75rem;
+        color: #a0aec0 !important;
+        display: block;
+      }
+      .submenu .nav-link:hover  { color: #fff !important; background: rgba(255,255,255,.07) !important; }
+      .submenu .nav-link.active { color: #fff !important; background: var(--sidebar-active) !important; }
 
       /* group label */
       .admin-group-label {
@@ -80,7 +102,7 @@
         </a>
 
         {{-- Nav --}}
-        <ul class="nav flex-column gap-1 flex-grow-1" id="adminNav">
+        <ul class="nav flex-column gap-1 mb-3" id="adminNav">
 
           <li>
             <a href="{{ route('admin.dashboard') }}"
@@ -184,14 +206,14 @@
           {{-- Settings group --}}
           <li>
             <button class="nav-link d-flex align-items-center gap-2 w-100 border-0 bg-transparent
-              {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
-              type="button" data-bs-toggle="collapse" data-bs-target="#settingsMenu"
-              aria-expanded="{{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }}">
+              {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.shipping.*') || request()->routeIs('admin.locations.*') || request()->routeIs('admin.webhooks.*') ? 'active' : '' }}"
+              type="button" id="settingsToggleBtn" onclick="toggleSidebarMenu('settingsMenu', this)"
+              aria-expanded="{{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.shipping.*') || request()->routeIs('admin.locations.*') || request()->routeIs('admin.webhooks.*') ? 'true' : 'false' }}">
               <i class="fa-solid fa-gear fa-fw"></i>
               <span class="admin-label">Settings</span>
-              <i class="fa-solid fa-chevron-down ms-auto chevron" style="font-size:.65rem;"></i>
+              <i class="fa-solid fa-chevron-down ms-auto chevron" style="font-size:.65rem; transition: transform .2s;"></i>
             </button>
-            <ul class="submenu collapse {{ request()->routeIs('admin.settings.*') ? 'show' : '' }}" id="settingsMenu">
+            <ul class="submenu {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.shipping.*') || request()->routeIs('admin.locations.*') || request()->routeIs('admin.webhooks.*') ? 'show' : '' }}" id="settingsMenu">
               <li>
                 <a href="{{ route('admin.settings.store') }}"
                   class="nav-link {{ request()->routeIs('admin.settings.store') ? 'active' : '' }}">
@@ -338,12 +360,36 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @stack('scripts')
     <script>
+    // ── Sidebar collapse toggle ──────────────────────────────────────────────
+    function toggleSidebarMenu(menuId, btn) {
+      var menu = document.getElementById(menuId);
+      if (!menu) return;
+      var isOpen = menu.classList.toggle('show');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      var chevron = btn.querySelector('.chevron');
+      if (chevron) chevron.style.transform = isOpen ? 'rotate(-180deg)' : '';
+      if (isOpen) {
+        // scroll the submenu into view inside the sidebar
+        setTimeout(function () {
+          menu.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 310); // after transition completes
+      }
+    }
+
+    // ── Sidebar collapse button ──────────────────────────────────────────────
     (function () {
       var sidebar = document.getElementById('adminSidebar');
       var toggle  = document.getElementById('adminSidebarToggle');
       if (!sidebar || !toggle) return;
 
       try { if (localStorage.getItem('sb_collapsed') === '1') sidebar.classList.add('is-collapsed'); } catch(e){}
+
+      // Set initial chevron state
+      var settingsBtn = document.getElementById('settingsToggleBtn');
+      if (settingsBtn && settingsBtn.getAttribute('aria-expanded') === 'true') {
+        var chevron = settingsBtn.querySelector('.chevron');
+        if (chevron) chevron.style.transform = 'rotate(-180deg)';
+      }
 
       function applyTooltips() {
         var collapsed = sidebar.classList.contains('is-collapsed');

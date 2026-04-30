@@ -31,9 +31,9 @@
         <label class="form-label fw-semibold">Media</label>
 
         {{-- Existing images --}}
-        @if(isset($product) && $product->relationLoaded('images') && $product->images->isNotEmpty())
+        @if(isset($product) && $product->relationLoaded('productImages') && $product->productImages->isNotEmpty())
           <div class="row g-2 mb-3" id="existingImages">
-            @foreach($product->images->sortBy('position') as $img)
+            @foreach($product->productImages->sortBy('position') as $img)
               <div class="col-3 col-md-2 position-relative" data-image-id="{{ $img->id }}">
                 <img src="{{ asset('storage/'.$img->src) }}" class="img-thumbnail" style="width:100%;height:80px;object-fit:cover;">
                 <input type="hidden" name="keep_image_ids[]" value="{{ $img->id }}">

@@ -15,7 +15,7 @@ class ProductController extends Controller
     {
         $limit = min((int) ($request->limit ?? 20), 250);
 
-        $query = Product::with(['variants', 'images'])
+        $query = Product::with(['variants', 'productImages'])
             ->where('status', 'active');
 
         if ($request->filled('status')) {
@@ -68,7 +68,7 @@ class ProductController extends Controller
 
     public function show(string $identifier): JsonResponse
     {
-        $product = Product::with(['variants', 'images', 'collections'])
+        $product = Product::with(['variants', 'productImages', 'collections'])
             ->where(function ($q) use ($identifier) {
                 is_numeric($identifier)
                     ? $q->where('id', $identifier)
@@ -82,7 +82,7 @@ class ProductController extends Controller
 
     public function showByHandle(string $slug): JsonResponse
     {
-        $product = Product::with(['variants', 'images', 'collections'])
+        $product = Product::with(['variants', 'productImages', 'collections'])
             ->where('slug', $slug)
             ->where('status', 'active')
             ->firstOrFail();

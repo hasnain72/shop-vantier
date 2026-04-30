@@ -39,7 +39,7 @@ class ProductService
                 ]);
             }
 
-            return $product->fresh(['variants', 'images', 'collections']);
+            return $product->fresh(['variants', 'productImages', 'collections']);
         });
     }
 
@@ -68,7 +68,7 @@ class ProductService
             $firstImage = ProductImage::where('product_id', $product->id)->orderBy('position')->first();
             $product->update(['featured_image' => $firstImage?->src]);
 
-            return $product->fresh(['variants', 'images', 'collections']);
+            return $product->fresh(['variants', 'productImages', 'collections']);
         });
     }
 

@@ -122,7 +122,7 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        $product->load(['collections', 'variants', 'images']);
+        $product->load(['collections', 'variants', 'productImages']);
 
         $productTypes = ProductType::query()->active()->orderBy('name')->get();
         $collections = Collection::query()->orderBy('title')->get();

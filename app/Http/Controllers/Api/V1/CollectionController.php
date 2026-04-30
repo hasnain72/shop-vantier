@@ -68,7 +68,7 @@ class CollectionController extends Controller
         $limit = min((int) ($request->limit ?? 20), 250);
 
         $products = $collection->products()
-            ->with(['variants', 'images'])
+            ->with(['variants', 'productImages'])
             ->where('status', 'active')
             ->paginate($limit);
 
