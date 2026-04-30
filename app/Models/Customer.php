@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Mail\CustomerPasswordResetMail;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 
 class Customer extends Authenticatable
@@ -68,6 +71,12 @@ class Customer extends Authenticatable
     public function scopeEnabled($query)
     {
         return $query->where('state', 'enabled');
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $resetUrl = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
+        Mail::to($this->email)->send(new CustomerPasswordResetMail($this, $resetUrl));
     }
 
     public function getFullNameAttribute(): string
