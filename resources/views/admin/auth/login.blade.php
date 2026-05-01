@@ -72,6 +72,28 @@
 
               <button class="btn btn-primary w-100" type="submit">Login</button>
             </form>
+
+            <div class="mt-3 p-3 rounded" style="background:#f8f9fa; border:1px dashed #dee2e6;">
+              <div class="small fw-semibold text-secondary mb-1" style="letter-spacing:.04em;">DEMO CREDENTIALS</div>
+              <div class="small mb-1">
+                <span class="text-muted">Email:</span>
+                <code class="text-dark ms-1">admin@example.com</code>
+              </div>
+              <div class="small">
+                <span class="text-muted">Password:</span>
+                <code class="text-dark ms-1">password</code>
+              </div>
+            </div>
+
+            <div class="mt-3 text-center">
+              <a href="{{ route('api.docs') }}" target="_blank" class="small text-decoration-none text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                  <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2z"/>
+                  <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7zm2-1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H2z"/>
+                </svg>
+                API Documentation
+              </a>
+            </div>
           </div>
         </div>
       </div>

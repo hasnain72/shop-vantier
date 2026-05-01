@@ -29,8 +29,10 @@ Route::get('/clear', function () {
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('admin.login');
 });
+
+Route::get('/api/v1/docs', fn () => view('api.docs'))->name('api.docs');
 
 Route::prefix('admin')->as('admin.')->group(function () {
     Route::get('login', [\App\Http\Controllers\Admin\AuthController::class, 'showLogin'])->name('login');
