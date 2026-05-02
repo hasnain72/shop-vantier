@@ -33,6 +33,7 @@ Route::get('/', function () {
 });
 
 Route::get('/api/v1/docs', fn () => view('api.docs'))->name('api.docs');
+Route::get('/api/v1/docs/spec', fn () => response()->json(require resource_path('openapi.php')))->name('api.docs.spec');
 
 Route::prefix('admin')->as('admin.')->group(function () {
     Route::get('login', [\App\Http\Controllers\Admin\AuthController::class, 'showLogin'])->name('login');
