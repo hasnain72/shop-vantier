@@ -68,9 +68,10 @@ class ProductController extends Controller
     public function create(): View
     {
         $productTypes = ProductType::query()->active()->orderBy('name')->get();
-        $collections = Collection::query()->orderBy('title')->get();
+        $collections  = Collection::query()->orderBy('title')->get();
+        $product      = null;
 
-        return view('admin.products.create', compact('productTypes', 'collections'));
+        return view('admin.products.create', compact('productTypes', 'collections', 'product'));
     }
 
     public function store(StoreProductRequest $request): RedirectResponse

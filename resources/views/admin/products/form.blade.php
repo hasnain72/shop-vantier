@@ -10,7 +10,7 @@
         <div class="mb-0">
           <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
           <input name="title" class="form-control @error('title') is-invalid @enderror"
-            value="{{ old('title', $product->title ?? '') }}" placeholder="Short sleeve t-shirt" required>
+            value="{{ old('title', $product?->title ?? '') }}" placeholder="Short sleeve t-shirt" required>
           @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
       </div>
@@ -20,7 +20,7 @@
     <div class="card border-0 shadow-sm mb-3">
       <div class="card-body">
         <label class="form-label fw-semibold">Description</label>
-        <textarea name="body_html" id="body_html" class="form-control @error('body_html') is-invalid @enderror" rows="6">{{ old('body_html', $product->body_html ?? '') }}</textarea>
+        <textarea name="body_html" id="body_html" class="form-control @error('body_html') is-invalid @enderror" rows="6">{{ old('body_html', $product?->body_html ?? '') }}</textarea>
         @error('body_html')<div class="invalid-feedback">{{ $message }}</div>@enderror
       </div>
     </div>
@@ -95,7 +95,7 @@
         </div>
         <div class="form-check mt-3">
           <input class="form-check-input" type="checkbox" value="1" id="taxable" name="taxable"
-            @checked(old('taxable', $product->taxable ?? true))>
+            @checked(old('taxable', $product?->taxable ?? true))>
           <label class="form-check-label" for="taxable">Charge tax on this product</label>
         </div>
       </div>
@@ -142,7 +142,7 @@
         <div class="fw-semibold mb-3">Shipping</div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" value="1" id="requires_shipping" name="requires_shipping"
-            @checked(old('requires_shipping', $product->requires_shipping ?? true))>
+            @checked(old('requires_shipping', $product?->requires_shipping ?? true))>
           <label class="form-check-label" for="requires_shipping">This is a physical product</label>
         </div>
         <div id="shippingFields">
@@ -154,7 +154,7 @@
                   value="{{ old('weight', isset($product) ? optional($product->variants->first())->weight : '') }}">
                 <select name="weight_unit" class="form-select" style="max-width:80px;">
                   @foreach(['kg','g','lb','oz'] as $unit)
-                    <option value="{{ $unit }}" @selected(old('weight_unit', optional($product->variants->first() ?? null)?->weight_unit ?? 'kg') === $unit)>{{ $unit }}</option>
+                    <option value="{{ $unit }}" @selected(old('weight_unit', optional($product?->variants?->first())?->weight_unit ?? 'kg') === $unit)>{{ $unit }}</option>
                   @endforeach
                 </select>
               </div>
@@ -200,7 +200,7 @@
         <label class="form-label fw-semibold">Status</label>
         <select name="status" class="form-select @error('status') is-invalid @enderror" required>
           @foreach(['draft' => 'Draft', 'active' => 'Active', 'archived' => 'Archived'] as $val => $label)
-            <option value="{{ $val }}" @selected(old('status', $product->status ?? 'draft') === $val)>{{ $label }}</option>
+            <option value="{{ $val }}" @selected(old('status', $product?->status ?? 'draft') === $val)>{{ $label }}</option>
           @endforeach
         </select>
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -208,7 +208,7 @@
         <label class="form-label fw-semibold mt-3">Published at</label>
         <input type="text" name="published_at" id="published_at" class="form-control flatpickr"
           placeholder="Schedule publish date…"
-          value="{{ old('published_at', optional($product->published_at ?? null)?->format('Y-m-d H:i')) }}">
+          value="{{ old('published_at', optional($product?->published_at)?->format('Y-m-d H:i')) }}">
       </div>
     </div>
 
@@ -240,14 +240,14 @@
         <select name="product_type_id" class="form-select @error('product_type_id') is-invalid @enderror">
           <option value="">—</option>
           @foreach($productTypes as $pt)
-            <option value="{{ $pt->id }}" @selected(old('product_type_id', $product->product_type_id ?? null) == $pt->id)>{{ $pt->name }}</option>
+            <option value="{{ $pt->id }}" @selected(old('product_type_id', $product?->product_type_id ?? null) == $pt->id)>{{ $pt->name }}</option>
           @endforeach
         </select>
         @error('product_type_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
 
         <label class="form-label fw-semibold mt-3">Vendor</label>
         <input name="vendor" class="form-control @error('vendor') is-invalid @enderror"
-          value="{{ old('vendor', $product->vendor ?? '') }}" placeholder="e.g. Nike">
+          value="{{ old('vendor', $product?->vendor ?? '') }}" placeholder="e.g. Nike">
         @error('vendor')<div class="invalid-feedback">{{ $message }}</div>@enderror
       </div>
     </div>
@@ -271,9 +271,9 @@
       <div class="card-body">
         <div class="fw-semibold mb-3">Search engine listing</div>
         <label class="form-label">Meta title</label>
-        <input name="meta_title" class="form-control mb-2" value="{{ old('meta_title', $product->meta_title ?? '') }}">
+        <input name="meta_title" class="form-control mb-2" value="{{ old('meta_title', $product?->meta_title ?? '') }}">
         <label class="form-label">Meta description</label>
-        <textarea name="meta_description" class="form-control" rows="3">{{ old('meta_description', $product->meta_description ?? '') }}</textarea>
+        <textarea name="meta_description" class="form-control" rows="3">{{ old('meta_description', $product?->meta_description ?? '') }}</textarea>
       </div>
     </div>
 
