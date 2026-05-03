@@ -80,6 +80,10 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::put('product-types/{productType}',     [\App\Http\Controllers\Admin\ProductTypeController::class, 'update'])->name('product-types.update');
         Route::delete('product-types/{productType}',  [\App\Http\Controllers\Admin\ProductTypeController::class, 'destroy'])->name('product-types.destroy');
 
+        // Import
+        Route::get('import',  [\App\Http\Controllers\Admin\ImportController::class, 'index'])->name('import.index');
+        Route::post('import', [\App\Http\Controllers\Admin\ImportController::class, 'store'])->name('import.store');
+
         // Activity log
         Route::get('activity', [\App\Http\Controllers\Admin\ActivityController::class, 'index'])->name('activity.index');
 

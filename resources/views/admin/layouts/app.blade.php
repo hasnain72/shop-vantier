@@ -196,6 +196,14 @@
           <li class="admin-group-label">Analytics & Config</li>
 
           <li>
+            <a href="{{ route('admin.import.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.import.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-file-import fa-fw"></i>
+              <span class="admin-label">Import</span>
+            </a>
+          </li>
+
+          <li>
             <a href="{{ route('admin.reports.index') }}"
               class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
               <i class="fa-solid fa-chart-line fa-fw"></i>
