@@ -8,10 +8,96 @@
     <div class="h4 mb-0">Products</div>
     <div class="text-secondary small">{{ $products->total() }} products total</div>
   </div>
-  <a class="btn btn-primary" href="{{ route('admin.products.create') }}">
-    <i class="bi bi-plus-lg me-1"></i>New product
-  </a>
+  <div class="d-flex gap-2 align-items-center">
+
+    {{-- Image download button --}}
+    <div id="imgDownloadWrap">
+      <button id="imgDownloadBtn" class="btn btn-outline-secondary btn-sm" onclick="startImageDownload()">
+        <i class="fa-solid fa-cloud-arrow-down me-1"></i>
+        Download images
+        <span id="imgRemaining" class="badge bg-warning text-dark ms-1" style="display:none;"></span>
+      </button>
+    </div>
+
+    <a class="btn btn-primary" href="{{ route('admin.products.create') }}">
+      <i class="bi bi-plus-lg me-1"></i>New product
+    </a>
+  </div>
 </div>
+
+{{-- Download result toast --}}
+<div id="imgToast" class="alert alert-info py-2 px-3 mb-3 small d-flex align-items-center gap-2" style="display:none !important;">
+  <span id="imgToastMsg"></span>
+  <button type="button" class="btn-close btn-close-sm ms-auto" onclick="this.closest('#imgToast').style.display='none'"></button>
+</div>
+
+<script>
+(function () {
+  // Load remaining count on page load
+  fetch('{{ route('admin.products.image-download-status') }}')
+    .then(r => r.json())
+    .then(d => updateBadge(d.remaining));
+
+  function updateBadge(n) {
+    var badge = document.getElementById('imgRemaining');
+    var btn   = document.getElementById('imgDownloadBtn');
+    if (n > 0) {
+      badge.textContent = n + ' left';
+      badge.style.display = '';
+      btn.classList.remove('btn-outline-success');
+      btn.classList.add('btn-outline-secondary');
+    } else {
+      badge.style.display = 'none';
+      btn.classList.remove('btn-outline-secondary');
+      btn.classList.add('btn-outline-success');
+      btn.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i> All images local';
+      btn.disabled  = true;
+    }
+  }
+
+  window.startImageDownload = function () {
+    var btn = document.getElementById('imgDownloadBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Downloading…';
+
+    fetch('{{ route('admin.products.download-images') }}', {
+      method : 'POST',
+      headers: {
+        'X-CSRF-TOKEN' : '{{ csrf_token() }}',
+        'Content-Type' : 'application/json',
+        'Accept'       : 'application/json',
+      },
+      body: JSON.stringify({ batch: 20 }),
+    })
+    .then(r => r.json())
+    .then(function (d) {
+      showToast(
+        '<i class="fa-solid fa-circle-check text-success me-1"></i>' +
+        '<strong>' + d.downloaded + ' images downloaded</strong>' +
+        (d.failed ? ', <span class="text-danger">' + d.failed + ' failed</span>' : '') +
+        ' — ' + d.remaining + ' products remaining.'
+      );
+      updateBadge(d.remaining);
+
+      if (!d.done) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Download next 20 <span id="imgRemaining" class="badge bg-warning text-dark ms-1">' + d.remaining + ' left</span>';
+      }
+    })
+    .catch(function (err) {
+      showToast('<i class="fa-solid fa-circle-exclamation text-danger me-1"></i> Error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Retry download';
+    });
+  };
+
+  function showToast(html) {
+    var t = document.getElementById('imgToast');
+    document.getElementById('imgToastMsg').innerHTML = html;
+    t.style.display = 'flex';
+  }
+})();
+</script>
 
 {{-- Filters --}}
 <form method="GET" action="{{ route('admin.products.index') }}" id="filterForm">

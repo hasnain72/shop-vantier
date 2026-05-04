@@ -10,9 +10,11 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductType;
 use App\Models\ProductVariant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -186,6 +188,100 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product deleted.');
+    }
+
+    /**
+     * Download external (Shopify CDN) images for the next batch of products
+     * and save them locally. Returns JSON with progress stats.
+     */
+    public function downloadImages(Request $request): JsonResponse
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
+
+        $batchSize = (int) $request->input('batch', 20);
+
+        // Pick next N products that still have at least one external image
+        $productIds = ProductImage::where('src', 'like', '%cdn.shopify.com%')
+            ->select('product_id')
+            ->distinct()
+            ->limit($batchSize)
+            ->pluck('product_id');
+
+        $downloaded = 0;
+        $failed     = 0;
+        $errors     = [];
+
+        foreach ($productIds as $productId) {
+            $images = ProductImage::where('product_id', $productId)
+                ->where('src', 'like', '%cdn.shopify.com%')
+                ->get();
+
+            foreach ($images as $image) {
+                try {
+                    $originalUrl = $image->src;
+
+                    // Strip query string for a clean filename
+                    $cleanUrl  = strtok($originalUrl, '?');
+                    $filename  = basename($cleanUrl);
+                    $ext       = strtolower(pathinfo($filename, PATHINFO_EXTENSION)) ?: 'jpg';
+
+                    // Sanitize: keep only safe chars
+                    $safeName  = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+                    $dir       = "products/{$productId}";
+                    $localPath = "{$dir}/{$safeName}";
+
+                    // Download with 30s timeout (SSL verify off — CDN is trusted)
+                    $response = Http::withoutVerifying()->timeout(30)->get($originalUrl);
+
+                    if (! $response->successful()) {
+                        $failed++;
+                        $errors[] = "HTTP {$response->status()}: {$originalUrl}";
+                        continue;
+                    }
+
+                    Storage::disk('public')->makeDirectory($dir);
+                    Storage::disk('public')->put($localPath, $response->body());
+
+                    $localUrl = $localPath;
+
+                    // Update product_images.src
+                    $image->src = $localUrl;
+                    $image->save();
+
+                    // Update products.featured_image (bypass Spatie slug events)
+                    DB::table('products')
+                        ->where('featured_image', $originalUrl)
+                        ->update(['featured_image' => $localUrl]);
+
+                    $downloaded++;
+
+                } catch (\Throwable $e) {
+                    $failed++;
+                    $errors[] = $e->getMessage();
+                }
+            }
+        }
+
+        $remaining = ProductImage::where('src', 'like', '%cdn.shopify.com%')
+            ->select('product_id')->distinct()->count();
+
+        return response()->json([
+            'downloaded' => $downloaded,
+            'failed'     => $failed,
+            'remaining'  => $remaining,
+            'done'       => $remaining === 0,
+            'errors'     => array_slice($errors, 0, 5),
+        ]);
+    }
+
+    /** Return count of products still having external images (for the button badge). */
+    public function imageDownloadStatus(): JsonResponse
+    {
+        $remaining = ProductImage::where('src', 'like', '%cdn.shopify.com%')
+            ->select('product_id')->distinct()->count();
+
+        return response()->json(['remaining' => $remaining]);
     }
 }
 

@@ -47,6 +47,8 @@ Route::prefix('admin')->as('admin.')->group(function () {
             ->except(['show'])
             ->names('collections');
 
+        Route::post('products/download-images',      [\App\Http\Controllers\Admin\ProductController::class, 'downloadImages'])->name('products.download-images');
+        Route::get('products/image-download-status', [\App\Http\Controllers\Admin\ProductController::class, 'imageDownloadStatus'])->name('products.image-download-status');
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)
             ->except(['show'])
             ->names('products');
