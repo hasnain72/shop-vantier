@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Customer;
+use App\Models\CustomerAddress;
 use App\Models\InventoryItem;
 use App\Models\InventoryLevel;
 use App\Models\InventoryLocation;
@@ -13,6 +15,7 @@ use App\Models\ProductType;
 use App\Models\ProductVariant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class ImportShopify extends Command
@@ -50,6 +53,7 @@ class ImportShopify extends Command
                 'inventory_levels', 'inventory_items',
                 'product_images', 'product_variants', 'products',
                 'order_line_items', 'orders',
+                'customer_addresses', 'customers',
             ] as $t) {
                 DB::table($t)->truncate();
             }
@@ -155,6 +159,7 @@ class ImportShopify extends Command
                     'body_html'               => $first['Body (HTML)'] ?? null ?: null,
                     'vendor'                  => trim($first['Vendor'] ?? '') ?: null,
                     'product_type'            => $typeStr ?: null,
+                    'product_category'        => trim($first['Product Category'] ?? '') ?: null,
                     'product_type_id'         => $typeId,
                     'tags'                    => $this->parseTags($first['Tags'] ?? ''),
                     'status'                  => $status,
@@ -399,7 +404,7 @@ class ImportShopify extends Command
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  ORDERS
+    //  ORDERS  (+ auto-create customers & addresses)
     // ═══════════════════════════════════════════════════════════
     private function importOrders(string $file): void
     {
@@ -420,24 +425,86 @@ class ImportShopify extends Command
             $grouped[$name][] = $row;
         }
 
-        $bar     = $this->output->createProgressBar(count($grouped));
-        $created = 0;
-        $skipped = 0;
+        $bar             = $this->output->createProgressBar(count($grouped));
+        $created         = 0;
+        $skipped         = 0;
+        $customerStatMap = []; // customer_id => ['count' => int, 'spent' => float]
 
         foreach ($grouped as $name => $orderRows) {
             $first = $orderRows[0];
 
             $orderNumber = ltrim($name, '#');
 
-            // Skip if already exists (check both name and order_number)
             if (Order::where('name', $name)->orWhere('order_number', $orderNumber)->exists()) {
                 $skipped++;
                 $bar->advance();
                 continue;
             }
 
-            DB::transaction(function () use ($name, $orderNumber, $orderRows, $first, &$created) {
+            DB::transaction(function () use ($name, $orderNumber, $orderRows, $first, &$created, &$customerStatMap) {
 
+                // ── 1. Customer & addresses ────────────────────
+                $customerId = null;
+                $email      = trim($first['Email'] ?? '');
+
+                if ($email !== '') {
+                    $billingName  = trim($first['Billing Name']  ?? '');
+                    $shippingName = trim($first['Shipping Name'] ?? '');
+                    $displayName  = $billingName ?: $shippingName;
+                    $nameParts    = $this->splitName($displayName);
+
+                    $phone = trim($first['Phone'] ?? '')
+                          ?: trim($first['Billing Phone'] ?? '')
+                          ?: trim($first['Shipping Phone'] ?? '')
+                          ?: null;
+
+                    $customer = Customer::firstOrCreate(
+                        ['email' => $email],
+                        [
+                            'first_name'        => $nameParts[0] ?: 'Unknown',
+                            'last_name'         => $nameParts[1] ?: '',
+                            'phone'             => $phone,
+                            'password'          => Hash::make('Shopify@123'),
+                            'accepts_marketing' => strtolower($first['Accepts Marketing'] ?? 'no') === 'yes',
+                            'currency'          => $first['Currency'] ?? 'SAR',
+                            'tags'              => $this->parseTags($first['Tags'] ?? ''),
+                            'state'             => 'enabled',
+                            'verified_email'    => false,
+                        ]
+                    );
+
+                    // Patch phone if it was missing on an existing customer
+                    if (! $customer->phone && $phone) {
+                        Customer::where('id', $customer->id)->update(['phone' => $phone]);
+                    }
+
+                    $customerId = $customer->id;
+
+                    // Shipping address (set as default)
+                    $shippingAddr     = $this->buildAddress($first, 'Shipping');
+                    $normShipping     = $this->normalizeAddress($shippingAddr, $nameParts, $customerId, true);
+                    if (! empty($shippingAddr['address1']) && ! empty($shippingAddr['city'])) {
+                        CustomerAddress::updateOrCreate(
+                            ['customer_id' => $customerId, 'address1' => $normShipping['address1'], 'zip' => $normShipping['zip']],
+                            $normShipping
+                        );
+                    }
+
+                    // Billing address — only if different from shipping
+                    $billingAddr  = $this->buildAddress($first, 'Billing');
+                    $normBilling  = $this->normalizeAddress($billingAddr, $nameParts, $customerId, false);
+                    $sameAddr     = $normBilling['address1'] === $normShipping['address1']
+                                 && $normBilling['zip']      === $normShipping['zip'];
+
+                    if (! $sameAddr && ! empty($billingAddr['address1']) && ! empty($billingAddr['city'])) {
+                        CustomerAddress::updateOrCreate(
+                            ['customer_id' => $customerId, 'address1' => $normBilling['address1'], 'zip' => $normBilling['zip']],
+                            $normBilling
+                        );
+                    }
+                }
+
+                // ── 2. Order ───────────────────────────────────
                 $shippingAddress = $this->buildAddress($first, 'Shipping');
                 $billingAddress  = $this->buildAddress($first, 'Billing');
 
@@ -447,15 +514,30 @@ class ImportShopify extends Command
                 }
 
                 $fulfillmentStatus = strtolower($first['Fulfillment Status'] ?? '') ?: null;
+                $discountCode      = trim($first['Discount Code'] ?? '');
+                $discountAmount    = (float) ($first['Discount Amount'] ?? 0);
 
-                $discountCode   = trim($first['Discount Code'] ?? '');
-                $discountAmount = (float) ($first['Discount Amount'] ?? 0);
+                $clientDetails = array_filter([
+                    'risk_level'     => trim($first['Risk Level']    ?? '') ?: null,
+                    'payment_method' => trim($first['Payment Method'] ?? '') ?: null,
+                    'device_id'      => trim($first['Device ID']     ?? '') ?: null,
+                    'receipt_number' => trim($first['Receipt Number'] ?? '') ?: null,
+                ]);
+
+                $noteAttributes = [];
+                if (trim($first['Note Attributes'] ?? '') !== '') {
+                    $noteAttributes = [['name' => 'note_attributes', 'value' => $first['Note Attributes']]];
+                }
 
                 $order = Order::create([
+                    'customer_id'             => $customerId,
                     'name'                    => $name,
                     'order_number'            => $orderNumber,
-                    'email'                   => $first['Email'] ?? null,
-                    'phone'                   => $first['Billing Phone'] ?? $first['Shipping Phone'] ?? $first['Phone'] ?? null,
+                    'email'                   => $email ?: null,
+                    'phone'                   => trim($first['Phone'] ?? '')
+                                                 ?: trim($first['Billing Phone'] ?? '')
+                                                 ?: trim($first['Shipping Phone'] ?? '')
+                                                 ?: null,
                     'financial_status'        => $financialStatus,
                     'fulfillment_status'      => $fulfillmentStatus,
                     'currency'                => $first['Currency'] ?? 'SAR',
@@ -465,11 +547,14 @@ class ImportShopify extends Command
                     'total_shipping'          => (float) ($first['Shipping'] ?? 0),
                     'total_price'             => (float) ($first['Total'] ?? 0),
                     'discount_codes'          => $discountCode ? [['code' => $discountCode, 'amount' => $discountAmount]] : [],
-                    'note'                    => $first['Notes'] ?? null,
+                    'note'                    => trim($first['Notes'] ?? '') ?: null,
+                    'note_attributes'         => $noteAttributes,
                     'buyer_accepts_marketing' => strtolower($first['Accepts Marketing'] ?? 'no') === 'yes',
                     'shipping_address'        => $shippingAddress ?: null,
                     'billing_address'         => $billingAddress ?: null,
-                    'source_name'             => $first['Source'] ?? 'shopify',
+                    'source_name'             => trim($first['Source'] ?? '') ?: 'shopify',
+                    'source_identifier'       => trim($first['Id'] ?? '') ?: null,
+                    'client_details'          => $clientDetails ?: null,
                     'confirmed'               => true,
                     'tags'                    => $this->parseTags($first['Tags'] ?? ''),
                     'processed_at'            => $this->parseDate($first['Paid at'] ?? null)
@@ -479,6 +564,7 @@ class ImportShopify extends Command
                     'updated_at'              => now(),
                 ]);
 
+                // ── 3. Line items ──────────────────────────────
                 foreach ($orderRows as $row) {
                     $itemName = trim($row['Lineitem name'] ?? '');
                     if ($itemName === '') continue;
@@ -493,18 +579,27 @@ class ImportShopify extends Command
                         'title'                => $this->extractProductTitle($itemName),
                         'variant_title'        => $this->extractVariantTitle($itemName),
                         'sku'                  => $sku ?: null,
-                        'vendor'               => $row['Vendor'] ?? null,
+                        'vendor'               => trim($row['Vendor'] ?? '') ?: null,
                         'quantity'             => (int) ($row['Lineitem quantity'] ?? 1),
                         'price'                => (float) ($row['Lineitem price'] ?? 0),
                         'total_discount'       => (float) ($row['Lineitem discount'] ?? 0),
                         'requires_shipping'    => ($row['Lineitem requires shipping'] ?? 'true') === 'true',
                         'taxable'              => ($row['Lineitem taxable'] ?? 'true') === 'true',
-                        'fulfillment_status'   => $row['Lineitem fulfillment status'] ?? null ?: null,
+                        'fulfillment_status'   => trim($row['Lineitem fulfillment status'] ?? '') ?: null,
                         'name'                 => $itemName,
                         'properties'           => [],
                         'tax_lines'            => $this->buildTaxLines($row),
                         'discount_allocations' => [],
                     ]);
+                }
+
+                // ── 4. Track customer stats ────────────────────
+                if ($customerId) {
+                    if (! isset($customerStatMap[$customerId])) {
+                        $customerStatMap[$customerId] = ['count' => 0, 'spent' => 0.0];
+                    }
+                    $customerStatMap[$customerId]['count']++;
+                    $customerStatMap[$customerId]['spent'] += (float) ($first['Total'] ?? 0);
                 }
 
                 $created++;
@@ -515,9 +610,45 @@ class ImportShopify extends Command
 
         $bar->finish();
         $this->newLine();
-        $this->line("  Orders: <fg=green>{$created} created</>, <fg=yellow>{$skipped} skipped</>");
 
-        $this->stats['orders'] = ['created' => $created, 'skipped' => $skipped];
+        // ── 5. Recalculate customer order stats from DB (idempotent) ─
+        foreach (array_keys($customerStatMap) as $cid) {
+            $totals = Order::where('customer_id', $cid)
+                ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(total_price), 0) as spent')
+                ->first();
+            Customer::where('id', $cid)->update([
+                'orders_count' => $totals->cnt,
+                'total_spent'  => $totals->spent,
+            ]);
+        }
+
+        $custCount = count($customerStatMap);
+        $this->line("  Orders: <fg=green>{$created} created</>, <fg=yellow>{$skipped} skipped</>, <fg=cyan>{$custCount} customer(s) synced</>");
+
+        $this->stats['orders'] = ['created' => $created, 'skipped' => $skipped, 'customers' => $custCount];
+    }
+
+    /**
+     * Merge address fields with fallback defaults for non-nullable CustomerAddress columns.
+     */
+    private function normalizeAddress(array $addr, array $nameParts, int $customerId, bool $isDefault): array
+    {
+        return [
+            'customer_id'  => $customerId,
+            'first_name'   => ($addr['first_name']  ?? '') ?: ($nameParts[0] ?: 'Unknown'),
+            'last_name'    => ($addr['last_name']   ?? '') ?: ($nameParts[1] ?: ''),
+            'company'      => $addr['company']      ?? null,
+            'address1'     => ($addr['address1']    ?? '') ?: '-',
+            'address2'     => $addr['address2']     ?? null,
+            'city'         => ($addr['city']        ?? '') ?: '-',
+            'province'     => $addr['province']     ?? null,
+            'province_code'=> $addr['province']     ?? null,
+            'country'      => ($addr['country']     ?? '') ?: 'SA',
+            'country_code' => ($addr['country_code'] ?? $addr['country'] ?? '') ?: 'SA',
+            'zip'          => ($addr['zip']         ?? '') ?: '00000',
+            'phone'        => $addr['phone']        ?? null,
+            'is_default'   => $isDefault,
+        ];
     }
 
     // ═══════════════════════════════════════════════════════════

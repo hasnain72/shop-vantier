@@ -21,9 +21,9 @@ class ImportController extends Controller
         ini_set('memory_limit', '512M');
 
         $request->validate([
-            'products_csv'  => ['nullable', 'file', 'max:102400'],
-            'orders_csv'    => ['nullable', 'file', 'max:102400'],
-            'inventory_csv' => ['nullable', 'file', 'max:102400'],
+            'products_csv'  => ['nullable', 'file', 'max:153600'],  // 150 MB
+            'orders_csv'    => ['nullable', 'file', 'max:153600'],
+            'inventory_csv' => ['nullable', 'file', 'max:153600'],
         ]);
 
         $hasFile = $request->hasFile('products_csv')
@@ -130,7 +130,9 @@ class ImportController extends Controller
             }
         }
 
-        if (preg_match('/Orders:\s+(\d+) created.*?(\d+) skipped/i', $output, $m)) {
+        if (preg_match('/Orders:\s+(\d+) created.*?(\d+) skipped.*?(\d+) customer/i', $output, $m)) {
+            $stats['orders'] = ['created' => (int)$m[1], 'skipped' => (int)$m[2], 'customers' => (int)$m[3]];
+        } elseif (preg_match('/Orders:\s+(\d+) created.*?(\d+) skipped/i', $output, $m)) {
             $stats['orders'] = ['created' => (int)$m[1], 'skipped' => (int)$m[2]];
         }
 

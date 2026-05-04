@@ -92,6 +92,9 @@
                   <div class="small text-muted">
                     <span class="fw-bold" style="color:#9333ea;">{{ $stats['orders']['created'] }}</span> created &nbsp;·&nbsp;
                     <span class="text-warning fw-bold">{{ $stats['orders']['skipped'] }}</span> skipped
+                    @if (!empty($stats['orders']['customers']))
+                      &nbsp;·&nbsp; <span class="text-info fw-bold">{{ $stats['orders']['customers'] }}</span> customer(s) synced
+                    @endif
                   </div>
                 @endif
               </div>

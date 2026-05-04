@@ -1,3 +1,19 @@
+# Increase PHP limits for CSV import uploads (Apache + mod_php)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 150M
+    php_value post_max_size       300M
+    php_value memory_limit        512M
+    php_value max_execution_time  0
+    php_value max_input_time      600
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 150M
+    php_value post_max_size       300M
+    php_value memory_limit        512M
+    php_value max_execution_time  0
+    php_value max_input_time      600
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

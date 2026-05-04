@@ -19,6 +19,7 @@ class Product extends Model
         'body_html',
         'vendor',
         'product_type',
+        'product_category',
         'tags',
         'status',
         'published_at',
