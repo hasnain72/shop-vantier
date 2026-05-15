@@ -30,6 +30,7 @@ class UpdateProductRequest extends FormRequest
             'collection_ids.*' => ['integer', 'exists:collections,id'],
             'images'          => ['nullable', 'array'],
             'images.*'        => ['image', 'max:5120'],
+            'product_category'   => ['nullable', 'string', 'max:255', 'exists:product_categories,slug'],
             'delete_image_ids'   => ['nullable', 'array'],
             'delete_image_ids.*' => ['integer'],
         ];

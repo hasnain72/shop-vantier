@@ -161,6 +161,9 @@
       <button type="button" class="btn btn-sm btn-outline-success" onclick="bulkAction('publish')">Publish</button>
       <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bulkAction('unpublish')">Unpublish</button>
       <button type="button" class="btn btn-sm btn-outline-warning" onclick="bulkAction('archive')">Archive</button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkPriceModal">
+        <i class="bi bi-tag me-1"></i>Update Price
+      </button>
       <button type="button" class="btn btn-sm btn-outline-danger" onclick="bulkAction('delete')">Delete</button>
       <input type="hidden" name="bulk_action" id="bulkActionInput">
     </div>
@@ -245,6 +248,50 @@
   @csrf
   @method('DELETE')
 </form>
+
+{{-- Bulk Price Update Modal --}}
+<div class="modal fade" id="bulkPriceModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-tag me-1"></i> Bulk Price Update</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary small mb-3">Updates ALL variants of the selected products.</p>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Action</label>
+          <select class="form-select" id="bpAction">
+            <option value="set_fixed">Set fixed price</option>
+            <option value="increase_fixed">Increase by fixed amount ($)</option>
+            <option value="decrease_fixed">Decrease by fixed amount ($)</option>
+            <option value="increase_percent">Increase by percentage (%)</option>
+            <option value="decrease_percent">Decrease by percentage (%)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" id="bpValueLabel">Value</label>
+          <div class="input-group">
+            <span class="input-group-text" id="bpPrefix">$</span>
+            <input type="number" class="form-control" id="bpValue" min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+
+        <div id="bpPreview" class="alert alert-secondary py-2 small d-none"></div>
+        <div id="bpError" class="alert alert-danger py-2 small d-none"></div>
+        <div id="bpSuccess" class="alert alert-success py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="bpApplyBtn" onclick="applyBulkPrice()">
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -303,6 +350,88 @@
         f.submit();
       }
     });
+  }
+
+  // ── Bulk Price Update ──────────────────────────────────────
+  const bpAction  = document.getElementById('bpAction');
+  const bpPrefix  = document.getElementById('bpPrefix');
+  const bpValueEl = document.getElementById('bpValue');
+
+  bpAction.addEventListener('change', function () {
+    const isPercent = this.value.includes('percent');
+    bpPrefix.textContent = isPercent ? '%' : '$';
+    bpValueEl.step = isPercent ? '1' : '0.01';
+    bpValueEl.placeholder = isPercent ? '0' : '0.00';
+    updateBpPreview();
+  });
+
+  bpValueEl.addEventListener('input', updateBpPreview);
+
+  function updateBpPreview() {
+    const val    = parseFloat(bpValueEl.value);
+    const action = bpAction.value;
+    const prev   = document.getElementById('bpPreview');
+
+    if (isNaN(val) || val < 0) { prev.classList.add('d-none'); return; }
+
+    const labels = {
+      set_fixed:        `All selected variants → $${val.toFixed(2)}`,
+      increase_fixed:   `Each variant price + $${val.toFixed(2)}`,
+      decrease_fixed:   `Each variant price − $${val.toFixed(2)}`,
+      increase_percent: `Each variant price × ${(1 + val/100).toFixed(4)} (+${val}%)`,
+      decrease_percent: `Each variant price × ${(1 - val/100).toFixed(4)} (−${val}%)`,
+    };
+
+    prev.textContent = labels[action] || '';
+    prev.classList.remove('d-none');
+  }
+
+  async function applyBulkPrice() {
+    const checked = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.value);
+    if (!checked.length) { alert('Please select at least one product.'); return; }
+
+    const val = parseFloat(bpValueEl.value);
+    if (isNaN(val) || val < 0) { alert('Enter a valid price value.'); return; }
+
+    const errDiv = document.getElementById('bpError');
+    const sucDiv = document.getElementById('bpSuccess');
+    const btn    = document.getElementById('bpApplyBtn');
+
+    errDiv.classList.add('d-none');
+    sucDiv.classList.add('d-none');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Applying…';
+
+    try {
+      const res = await fetch('{{ route('admin.products.bulk-price-update') }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          product_ids:  checked,
+          price_action: bpAction.value,
+          price_value:  val,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) throw new Error(json.message || 'Something went wrong.');
+
+      sucDiv.textContent = json.message;
+      sucDiv.classList.remove('d-none');
+
+      setTimeout(() => location.reload(), 1500);
+    } catch (err) {
+      errDiv.textContent = err.message;
+      errDiv.classList.remove('d-none');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Apply';
+    }
   }
 </script>
 @endpush

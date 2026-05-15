@@ -64,6 +64,11 @@ class Product extends Model
             ->withPivot(['sort_order']);
     }
 
+    public function addons()
+    {
+        return $this->hasMany(ProductAddon::class)->orderBy('position');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');

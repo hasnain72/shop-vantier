@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\ProductAddon;
 use App\Models\ProductVariant;
 use App\Services\DiscountService;
 use App\Services\ShippingService;
@@ -25,7 +26,7 @@ class CartController extends Controller
         if (!$cart) {
             return response()->json(['success' => false, 'message' => 'Cart not found.'], 404);
         }
-        return response()->json(['success' => true, 'data' => new CartResource($cart->load('items.variant.product'))]);
+        return response()->json(['success' => true, 'data' => new CartResource($cart->load(['items.variant.product', 'items.addon']))]);
     }
 
     public function add(Request $request)
@@ -34,6 +35,7 @@ class CartController extends Controller
             'items'                     => 'required|array|min:1',
             'items.*.variant_id'        => 'required|integer',
             'items.*.quantity'          => 'required|integer|min:1',
+            'items.*.addon_id'          => 'nullable|integer|exists:product_addons,id',
             'items.*.properties'        => 'nullable|array',
         ]);
 
@@ -47,21 +49,40 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => "Insufficient stock for: {$variant->title}"], 422);
             }
 
-            $existing = $cart->items()->where('variant_id', $item['variant_id'])->first();
+            $addon      = null;
+            $addonPrice = 0.00;
+
+            if (!empty($item['addon_id'])) {
+                $addon = ProductAddon::find($item['addon_id']);
+                if ($addon) {
+                    if (!$addon->hasStock($item['quantity'])) {
+                        return response()->json(['success' => false, 'message' => "Insufficient stock for addon: {$addon->name}"], 422);
+                    }
+                    $addonPrice = (float) $addon->price;
+                }
+            }
+
+            $existing = $cart->items()
+                ->where('variant_id', $item['variant_id'])
+                ->where('addon_id', $addon?->id)
+                ->first();
+
             if ($existing) {
                 $existing->increment('quantity', $item['quantity']);
             } else {
                 $cart->items()->create([
-                    'variant_id' => $item['variant_id'],
-                    'quantity'   => $item['quantity'],
-                    'price'      => $variant->price,
-                    'properties' => $item['properties'] ?? null,
+                    'variant_id'  => $item['variant_id'],
+                    'quantity'    => $item['quantity'],
+                    'price'       => $variant->price,
+                    'addon_id'    => $addon?->id,
+                    'addon_price' => $addonPrice,
+                    'properties'  => $item['properties'] ?? null,
                 ]);
             }
         }
 
         $cart->update(['requires_shipping' => true]);
-        $cart->load('items.variant.product');
+        $cart->load(['items.variant.product', 'items.addon']);
 
         return response()->json([
             'success' => true,
@@ -87,7 +108,7 @@ class CartController extends Controller
             $qty === 0 ? $item->delete() : $item->update(['quantity' => $qty]);
         }
 
-        $cart->load('items.variant.product');
+        $cart->load(['items.variant.product', 'items.addon']);
         return response()->json(['success' => true, 'data' => new CartResource($cart)]);
     }
 
@@ -98,7 +119,7 @@ class CartController extends Controller
         if (!$cart) return response()->json(['success' => false, 'message' => 'Cart not found.'], 404);
 
         $cart->items()->where('id', $data['line_item_id'])->delete();
-        $cart->load('items.variant.product');
+        $cart->load(['items.variant.product', 'items.addon']);
         return response()->json(['success' => true, 'data' => new CartResource($cart)]);
     }
 
@@ -107,7 +128,7 @@ class CartController extends Controller
         $cart = $this->resolveCart($request, create: false);
         if ($cart) {
             $cart->items()->delete();
-            $cart->load('items.variant.product');
+            $cart->load(['items.variant.product', 'items.addon']);
         }
 
         return response()->json(['success' => true, 'message' => 'Cart cleared.', 'data' => $cart ? new CartResource($cart) : null]);
@@ -119,7 +140,7 @@ class CartController extends Controller
         $cart = $this->resolveCart($request, create: false);
         if (!$cart) return response()->json(['success' => false, 'message' => 'Cart not found.'], 404);
 
-        $cart->load('items.variant.product');
+        $cart->load(['items.variant.product', 'items.addon']);
         $subtotal = $cart->items->sum(fn ($i) => (float) $i->price * $i->quantity);
         $lineItems = $cart->items->map(fn ($i) => ['variant_id' => $i->variant_id, 'quantity' => $i->quantity])->toArray();
 
@@ -173,7 +194,7 @@ class CartController extends Controller
         $customer = auth('customer')->user();
         $token    = $request->header('X-Cart-Token');
 
-        $query = Cart::with('items.variant.product');
+        $query = Cart::with(['items.variant.product', 'items.addon']);
 
         if ($customer) {
             $cart = $query->firstWhere('customer_id', $customer->id);

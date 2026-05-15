@@ -40,6 +40,11 @@ Route::prefix('v1')
             Route::put('me/addresses/{address_id}/default',     [\App\Http\Controllers\Api\V1\CustomerController::class, 'setDefaultAddress'])->name('me.addresses.default');
         });
 
+        // Product Categories (Tools, Watch Roll, Buckle, etc.)
+        Route::get('product-categories',                        [\App\Http\Controllers\Api\V1\ProductCategoryController::class, 'index'])->name('product-categories.index');
+        Route::get('product-categories/{slug}/products',        [\App\Http\Controllers\Api\V1\ProductCategoryController::class, 'products'])->name('product-categories.products');
+        Route::get('product-categories/{slug}',                 [\App\Http\Controllers\Api\V1\ProductCategoryController::class, 'show'])->name('product-categories.show');
+
         // Products (before /{product} to avoid route conflicts)
         Route::get('products/count',             [\App\Http\Controllers\Api\V1\ProductController::class, 'count'])->name('products.count');
         Route::get('products/handle/{slug}',     [\App\Http\Controllers\Api\V1\ProductController::class, 'showByHandle'])->name('products.handle');

@@ -34,6 +34,10 @@ class ProductController extends Controller
             $query->where('vendor', $request->vendor);
         }
 
+        if ($request->filled('product_category')) {
+            $query->where('product_category', $request->product_category);
+        }
+
         if ($request->filled('title')) {
             $query->where('title', 'like', '%' . $request->title . '%');
         }
@@ -78,7 +82,7 @@ class ProductController extends Controller
 
     public function show(string $identifier): JsonResponse
     {
-        $product = Product::with(['variants', 'productImages', 'collections'])
+        $product = Product::with(['variants', 'productImages', 'collections', 'addons' => fn ($q) => $q->active()])
             ->where(function ($q) use ($identifier) {
                 is_numeric($identifier)
                     ? $q->where('id', $identifier)
@@ -92,7 +96,7 @@ class ProductController extends Controller
 
     public function showByHandle(string $slug): JsonResponse
     {
-        $product = Product::with(['variants', 'productImages', 'collections'])
+        $product = Product::with(['variants', 'productImages', 'collections', 'addons' => fn ($q) => $q->active()])
             ->where('slug', $slug)
             ->where('status', 'active')
             ->firstOrFail();

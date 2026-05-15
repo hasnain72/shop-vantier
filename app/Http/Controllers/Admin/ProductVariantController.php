@@ -7,7 +7,10 @@ use App\Http\Requests\Admin\ProductVariant\StoreVariantRequest;
 use App\Http\Requests\Admin\ProductVariant\UpdateVariantRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProductVariantController extends Controller
@@ -49,6 +52,53 @@ class ProductVariantController extends Controller
         $variant->update($request->validated());
 
         return back()->with('success', 'Variant updated.');
+    }
+
+    public function bulkPriceUpdate(Request $request, Product $product): JsonResponse
+    {
+        $data = $request->validate([
+            'variant_ids'  => 'nullable|array',
+            'variant_ids.*'=> 'integer|exists:product_variants,id',
+            'price_action' => 'required|in:set_fixed,increase_percent,decrease_percent,increase_fixed,decrease_fixed',
+            'price_value'  => 'required|numeric|min:0',
+        ]);
+
+        $query = $product->variants();
+
+        if (!empty($data['variant_ids'])) {
+            $query->whereIn('id', $data['variant_ids']);
+        }
+
+        $variants = $query->get();
+
+        if ($variants->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No variants found.'], 422);
+        }
+
+        $updated = 0;
+
+        DB::transaction(function () use ($variants, $data, &$updated) {
+            foreach ($variants as $variant) {
+                $cur = (float) $variant->price;
+
+                $new = match ($data['price_action']) {
+                    'set_fixed'        => (float) $data['price_value'],
+                    'increase_fixed'   => $cur + (float) $data['price_value'],
+                    'decrease_fixed'   => max(0, $cur - (float) $data['price_value']),
+                    'increase_percent' => $cur * (1 + $data['price_value'] / 100),
+                    'decrease_percent' => $cur * (1 - $data['price_value'] / 100),
+                };
+
+                $variant->update(['price' => max(0, round($new, 2))]);
+                $updated++;
+            }
+        });
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "{$updated} variant(s) updated.",
+            'variants' => $product->variants()->get(['id', 'title', 'price']),
+        ]);
     }
 
     public function destroy(Product $product, ProductVariant $variant): RedirectResponse

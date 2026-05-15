@@ -252,6 +252,26 @@
       </div>
     </div>
 
+    {{-- Product Category --}}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <label class="form-label fw-semibold">Product Category</label>
+        <select name="product_category" class="form-select @error('product_category') is-invalid @enderror">
+          <option value="">— None —</option>
+          @foreach(\App\Models\ProductCategory::orderBy('sort_position')->orderBy('name')->get() as $cat)
+            <option value="{{ $cat->slug }}"
+              @selected(old('product_category', $product?->product_category ?? '') === $cat->slug)>
+              {{ $cat->name }}
+            </option>
+          @endforeach
+        </select>
+        @error('product_category')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div class="form-text">
+          <a href="{{ route('admin.product-categories.index') }}" target="_blank">Manage categories</a>
+        </div>
+      </div>
+    </div>
+
     {{-- Tags --}}
     <div class="card border-0 shadow-sm mb-3">
       <div class="card-body">

@@ -125,7 +125,7 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        $product->load(['collections', 'variants', 'productImages']);
+        $product->load(['collections', 'variants', 'productImages', 'addons']);
 
         $productTypes = ProductType::query()->active()->orderBy('name')->get();
         $collections = Collection::query()->orderBy('title')->get();
@@ -272,6 +272,48 @@ class ProductController extends Controller
             'remaining'  => $remaining,
             'done'       => $remaining === 0,
             'errors'     => array_slice($errors, 0, 5),
+        ]);
+    }
+
+    public function bulkPriceUpdate(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'product_ids'   => 'required|array|min:1',
+            'product_ids.*' => 'integer|exists:products,id',
+            'price_action'  => 'required|in:set_fixed,increase_percent,decrease_percent,increase_fixed,decrease_fixed',
+            'price_value'   => 'required|numeric|min:0',
+        ]);
+
+        $variants = ProductVariant::whereIn('product_id', $data['product_ids'])->get();
+
+        if ($variants->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No variants found for selected products.'], 422);
+        }
+
+        $updated = 0;
+
+        DB::transaction(function () use ($variants, $data, &$updated) {
+            foreach ($variants as $variant) {
+                $currentPrice = (float) $variant->price;
+
+                $newPrice = match ($data['price_action']) {
+                    'set_fixed'        => (float) $data['price_value'],
+                    'increase_fixed'   => $currentPrice + (float) $data['price_value'],
+                    'decrease_fixed'   => max(0, $currentPrice - (float) $data['price_value']),
+                    'increase_percent' => $currentPrice * (1 + $data['price_value'] / 100),
+                    'decrease_percent' => $currentPrice * (1 - $data['price_value'] / 100),
+                };
+
+                $newPrice = max(0, round($newPrice, 2));
+
+                $variant->update(['price' => $newPrice]);
+                $updated++;
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$updated} variant(s) updated across " . count($data['product_ids']) . " product(s).",
         ]);
     }
 

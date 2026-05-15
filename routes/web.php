@@ -49,6 +49,7 @@ Route::prefix('admin')->as('admin.')->group(function () {
 
         Route::post('products/download-images',      [\App\Http\Controllers\Admin\ProductController::class, 'downloadImages'])->name('products.download-images');
         Route::get('products/image-download-status', [\App\Http\Controllers\Admin\ProductController::class, 'imageDownloadStatus'])->name('products.image-download-status');
+        Route::post('products/bulk-price-update',    [\App\Http\Controllers\Admin\ProductController::class, 'bulkPriceUpdate'])->name('products.bulk-price-update');
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)
             ->except(['show'])
             ->names('products');
@@ -75,6 +76,12 @@ Route::prefix('admin')->as('admin.')->group(function () {
             Route::put('tax-rates/{taxRate}',     [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'updateTaxRate'])->name('tax-rates.update');
             Route::delete('tax-rates/{taxRate}',  [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'destroyTaxRate'])->name('tax-rates.destroy');
         });
+
+        // Product categories (Tools, Watch Roll, Buckle, etc.)
+        Route::get('product-categories',                        [\App\Http\Controllers\Admin\ProductCategoryController::class, 'index'])->name('product-categories.index');
+        Route::post('product-categories',                       [\App\Http\Controllers\Admin\ProductCategoryController::class, 'store'])->name('product-categories.store');
+        Route::put('product-categories/{productCategory}',      [\App\Http\Controllers\Admin\ProductCategoryController::class, 'update'])->name('product-categories.update');
+        Route::delete('product-categories/{productCategory}',   [\App\Http\Controllers\Admin\ProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
 
         // Product types
         Route::get('product-types',                   [\App\Http\Controllers\Admin\ProductTypeController::class, 'index'])->name('product-types.index');
@@ -160,12 +167,20 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::patch('webhooks/{webhook}/secret',    [\App\Http\Controllers\Admin\WebhookController::class, 'regenerateSecret'])->name('webhooks.secret');
 
         Route::prefix('products/{product}')->as('products.')->group(function () {
+            Route::post('variants/bulk-price-update', [\App\Http\Controllers\Admin\ProductVariantController::class, 'bulkPriceUpdate'])->name('variants.bulk-price-update');
             Route::get('variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'index'])->name('variants.index');
             Route::get('variants/create', [\App\Http\Controllers\Admin\ProductVariantController::class, 'create'])->name('variants.create');
             Route::post('variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'store'])->name('variants.store');
             Route::get('variants/{variant}/edit', [\App\Http\Controllers\Admin\ProductVariantController::class, 'edit'])->name('variants.edit');
             Route::put('variants/{variant}', [\App\Http\Controllers\Admin\ProductVariantController::class, 'update'])->name('variants.update');
             Route::delete('variants/{variant}', [\App\Http\Controllers\Admin\ProductVariantController::class, 'destroy'])->name('variants.destroy');
+
+            // Product Addons (Buckle options etc.)
+            Route::get('addons',                                    [\App\Http\Controllers\Admin\ProductAddonController::class, 'index'])->name('addons.index');
+            Route::post('addons',                                   [\App\Http\Controllers\Admin\ProductAddonController::class, 'store'])->name('addons.store');
+            Route::put('addons/{addon}',                            [\App\Http\Controllers\Admin\ProductAddonController::class, 'update'])->name('addons.update');
+            Route::delete('addons/{addon}',                         [\App\Http\Controllers\Admin\ProductAddonController::class, 'destroy'])->name('addons.destroy');
+            Route::post('addons/{addon}/adjust-inventory',          [\App\Http\Controllers\Admin\ProductAddonController::class, 'adjustInventory'])->name('addons.adjust-inventory');
         });
     });
 });

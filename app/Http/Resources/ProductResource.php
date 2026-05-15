@@ -15,8 +15,9 @@ class ProductResource extends JsonResource
             'title'        => $this->title,
             'slug'         => $this->slug,
             'body_html'    => $this->body_html,
-            'vendor'       => $this->vendor,
-            'product_type' => $this->product_type,
+            'vendor'           => $this->vendor,
+            'product_type'     => $this->product_type,
+            'product_category' => $this->product_category,
             'tags'         => $this->tags ?? [],
             'status'       => $this->status,
             'published_at' => $this->published_at?->toISOString(),
@@ -34,6 +35,7 @@ class ProductResource extends JsonResource
             }, []),
             'variants'     => ProductVariantResource::collection($this->whenLoaded('variants')),
             'options'      => $this->options ?? [],
+            'addons'       => ProductAddonResource::collection($this->whenLoaded('addons')),
         ];
     }
 }

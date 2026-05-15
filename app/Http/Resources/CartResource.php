@@ -11,9 +11,11 @@ class CartResource extends JsonResource
     public function toArray(Request $request): array
     {
         $items = $this->items->map(function ($item) {
-            $variant  = $item->variant;
-            $product  = $variant?->product;
-            $imgPath  = $product?->featured_image;
+            $variant    = $item->variant;
+            $product    = $variant?->product;
+            $imgPath    = $product?->featured_image;
+            $addonPrice = (float) ($item->addon_price ?? 0);
+            $unitPrice  = (float) $item->price + $addonPrice;
 
             return [
                 'id'               => $item->id,
@@ -24,9 +26,13 @@ class CartResource extends JsonResource
                 'sku'              => $variant?->sku,
                 'image'            => $imgPath ? Storage::disk('public')->url($imgPath) : null,
                 'price'            => (float) $item->price,
+                'addon_id'         => $item->addon_id,
+                'addon_name'       => $item->addon?->name,
+                'addon_price'      => $addonPrice,
+                'unit_price'       => $unitPrice,
                 'original_price'   => (float) ($variant?->price ?? $item->price),
                 'quantity'         => $item->quantity,
-                'total_price'      => round((float) $item->price * $item->quantity, 2),
+                'total_price'      => round($unitPrice * $item->quantity, 2),
                 'properties'       => $item->properties ?? [],
             ];
         });

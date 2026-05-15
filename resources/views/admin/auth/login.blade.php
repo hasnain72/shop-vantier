@@ -77,7 +77,7 @@
               <div class="small fw-semibold text-secondary mb-1" style="letter-spacing:.04em;">DEMO CREDENTIALS</div>
               <div class="small mb-1">
                 <span class="text-muted">Email:</span>
-                <code class="text-dark ms-1">admin@example.com</code>
+                <code class="text-dark ms-1">admin@store.com</code>
               </div>
               <div class="small">
                 <span class="text-muted">Password:</span>

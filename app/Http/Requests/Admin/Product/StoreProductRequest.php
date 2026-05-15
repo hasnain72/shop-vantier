@@ -32,6 +32,7 @@ class StoreProductRequest extends FormRequest
             'images.*' => ['image', 'max:5120'],
 
             // default variant
+            'product_category' => ['nullable', 'string', 'max:255', 'exists:product_categories,slug'],
             'default_price' => ['required', 'numeric', 'min:0'],
             'default_sku' => ['nullable', 'string', 'max:255'],
         ];
