@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Addons – ERD</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 32px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+  .sub {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 48px;
+  }
+
+  /* ── ERD CANVAS ── */
+  .erd {
+    display: grid;
+    grid-template-columns: 200px 80px 200px 80px 200px;
+    grid-template-rows: auto 60px auto;
+    align-items: start;
+    gap: 0;
+  }
+
+  /* ── TABLE BOX ── */
+  .tbl {
+    border: 2px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  .tbl-head {
+    background: #334155;
+    color: #fff;
+    font-weight: 700;
+    padding: 8px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tbl-head span { font-size: 15px; }
+  .tbl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+  .tbl-row:last-child { border-bottom: none; }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .pk { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+  .fk { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+  .em { width: 26px; } /* empty spacer */
+  .col-name { flex: 1; }
+  .col-type { color: #94a3b8; font-size: 10px; }
+
+  /* ── CONNECTOR ── */
+  .conn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 36px;
+  }
+  .line {
+    width: 100%;
+    height: 2px;
+    background: #94a3b8;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 7px solid #94a3b8;
+  }
+  .line::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid #94a3b8;
+  }
+  .rel-label {
+    position: absolute;
+    top: -18px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    background: #f8fafc;
+    padding: 0 4px;
+  }
+
+  /* vertical connector (products → cart_items down) */
+  .vert-conn {
+    grid-column: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .vert-line {
+    width: 2px;
+    height: 60px;
+    background: #94a3b8;
+    position: relative;
+  }
+  .vert-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -5px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #94a3b8;
+  }
+  .vert-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    margin-left: 10px;
+    white-space: nowrap;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    margin-top: 40px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 11px;
+    color: #475569;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+
+<h2>Product Addons — Entity Relationship Diagram</h2>
+<p class="sub">Database tables and their relationships</p>
+
+<div class="erd">
+
+  <!-- ROW 1 : products — [connector] — product_addons — [connector] — cart_items -->
+
+  <!-- products -->
+  <div class="tbl" style="grid-column:1; grid-row:1;">
+    <div class="tbl-head"><span>📦</span> products</div>
+    <div class="tbl-row"><span class="badge pk">PK</span><span class="col-name">id</span><span class="col-type">bigint</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">title</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">slug</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">price</span><span class="col-type">decimal</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">status</span><span class="col-type">enum</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">product_category</span><span class="col-type">varchar</span></div>
+  </div>
+
+  <!-- connector: products → product_addons -->
+  <div class="conn" style="grid-column:2; grid-row:1;">
+    <div class="line" style="position:relative;">
+      <span class="rel-label">1 → many</span>
+    </div>
+  </div>
+
+  <!-- product_addons -->
+  <div class="tbl" style="grid-column:3; grid-row:1;">
+    <div class="tbl-head" style="background:#6d28d9;"><span>🔩</span> product_addons</div>
+    <div class="tbl-row"><span class="badge pk">PK</span><span class="col-name">id</span><span class="col-type">bigint</span></div>
+    <div class="tbl-row"><span class="badge fk">FK</span><span class="col-name">product_id</span><span class="col-type">→ products</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">name</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">sku</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">image</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">price</span><span class="col-type">decimal(10,2)</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">inventory_quantity</span><span class="col-type">int</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">inventory_policy</span><span class="col-type">deny|continue</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">is_default</span><span class="col-type">boolean</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">is_active</span><span class="col-type">boolean</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">position</span><span class="col-type">int</span></div>
+  </div>
+
+  <!-- connector: product_addons → cart_items -->
+  <div class="conn" style="grid-column:4; grid-row:1;">
+    <div class="line" style="position:relative;">
+      <span class="rel-label">1 → many</span>
+    </div>
+  </div>
+
+  <!-- cart_items -->
+  <div class="tbl" style="grid-column:5; grid-row:1;">
+    <div class="tbl-head" style="background:#0891b2;"><span>🛒</span> cart_items</div>
+    <div class="tbl-row"><span class="badge pk">PK</span><span class="col-name">id</span><span class="col-type">bigint</span></div>
+    <div class="tbl-row"><span class="badge fk">FK</span><span class="col-name">cart_id</span><span class="col-type">→ carts</span></div>
+    <div class="tbl-row"><span class="badge fk">FK</span><span class="col-name">variant_id</span><span class="col-type">→ variants</span></div>
+    <div class="tbl-row"><span class="badge fk" style="background:#fce7f3;color:#9d174d;border-color:#fbcfe8;">FK</span><span class="col-name">addon_id</span><span class="col-type">→ product_addons</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">quantity</span><span class="col-type">int</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">price</span><span class="col-type">decimal(10,2)</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name" style="color:#9d174d;font-weight:600;">addon_price</span><span class="col-type">decimal(10,2)</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">properties</span><span class="col-type">json</span></div>
+  </div>
+
+  <!-- ROW 2 : vertical arrow from product_addons down (spacer row) -->
+  <div style="grid-column:1;grid-row:2;"></div>
+  <div style="grid-column:2;grid-row:2;"></div>
+  <div class="vert-conn" style="grid-row:2;">
+    <div style="display:flex; align-items:center;">
+      <div class="vert-line"></div>
+      <span class="vert-label">also links to ↓</span>
+    </div>
+  </div>
+  <div style="grid-column:4;grid-row:2;"></div>
+  <div style="grid-column:5;grid-row:2;"></div>
+
+  <!-- ROW 3 : product_variants below product_addons -->
+  <div style="grid-column:1;grid-row:3;"></div>
+  <div style="grid-column:2;grid-row:3;"></div>
+
+  <div class="tbl" style="grid-column:3; grid-row:3;">
+    <div class="tbl-head" style="background:#0f766e;"><span>🔀</span> product_variants</div>
+    <div class="tbl-row"><span class="badge pk">PK</span><span class="col-name">id</span><span class="col-type">bigint</span></div>
+    <div class="tbl-row"><span class="badge fk">FK</span><span class="col-name">product_id</span><span class="col-type">→ products</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">title</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">option1</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">option2</span><span class="col-type">varchar</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">price</span><span class="col-type">decimal(10,2)</span></div>
+    <div class="tbl-row"><span class="em"></span><span class="col-name">inventory_quantity</span><span class="col-type">int</span></div>
+  </div>
+
+  <div style="grid-column:4;grid-row:3;"></div>
+  <div style="grid-column:5;grid-row:3;"></div>
+
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><span class="badge pk">PK</span> Primary Key</div>
+  <div class="legend-item"><span class="badge fk">FK</span> Foreign Key</div>
+  <div class="legend-item">
+    <div style="width:30px;height:2px;background:#94a3b8;position:relative;">
+      <div style="position:absolute;right:-1px;top:-4px;border-left:6px solid #94a3b8;border-top:4px solid transparent;border-bottom:4px solid transparent;"></div>
+    </div>
+    Relationship
+  </div>
+  <div class="legend-item"><span style="color:#9d174d;font-weight:700;">Pink FK</span> = Newly added column</div>
+</div>
+
+</body>
+</html>

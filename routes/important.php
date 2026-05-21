@@ -25,3 +25,22 @@ Baad mein credentials same rahenge:
 Email	Password
 Admin	admin@store.com	password
 Customer	ahmed.khan@example.com	password
+
+backend-dev-vantier-chronosouq.com
+manage-backend.thevantier.com
+
+vantierapi.chronosouq.com
+
+ventier-dev-api
+ventier-dev-api
+ventier-dev-api
+
+-------------
+backend.thevantier.com
+thevantier-backend
+GmZ8flav0K9Pt8Hi5KKP
+
+
+thevantier-dev
+thevantier-dev
+thevantier-dev123
