@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel Shop — API Tester</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --sidebar: #161b27;
+    --card: #1e2535;
+    --border: #2d3748;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --input-bg: #0f1117;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+
+  /* SIDEBAR */
+  #sidebar { width: 260px; min-width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+  #sidebar-header { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+  #sidebar-header h1 { font-size: 16px; font-weight: 700; color: var(--accent); }
+  #sidebar-header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav-group { padding: 8px 0; }
+  .nav-group-title { padding: 6px 16px 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+  .nav-item { display: block; padding: 7px 16px; cursor: pointer; color: var(--muted); font-size: 13px; border-left: 3px solid transparent; transition: all .15s; }
+  .nav-item:hover { background: rgba(99,102,241,.08); color: var(--text); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(99,102,241,.1); }
+
+  /* MAIN */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* TOP BAR */
+  #topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #topbar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  #topbar input { flex: 1; min-width: 180px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  #topbar input:focus { outline: none; border-color: var(--accent); }
+  .top-group { display: flex; align-items: center; gap: 8px; flex: 1; }
+
+  /* CONTENT */
+  #content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: flex; flex-direction: column; gap: 14px; }
+  .section-title { font-size: 18px; font-weight: 700; color: var(--text); padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+
+  /* ENDPOINT CARD */
+  .ep-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .ep-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .ep-header:hover { background: rgba(255,255,255,.03); }
+  .method-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; min-width: 52px; text-align: center; }
+  .GET    { background: rgba(16,185,129,.15); color: #10b981; }
+  .POST   { background: rgba(99,102,241,.15); color: #818cf8; }
+  .PUT    { background: rgba(245,158,11,.15); color: #f59e0b; }
+  .DELETE { background: rgba(239,68,68,.15); color: #ef4444; }
+  .ep-title { font-size: 13px; font-weight: 600; flex: 1; }
+  .ep-url { font-size: 11px; color: var(--muted); font-family: monospace; }
+  .ep-toggle { color: var(--muted); font-size: 12px; transition: transform .2s; }
+  .ep-body { display: none; padding: 16px; border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+  .ep-body.open { display: flex; }
+
+  /* FORM FIELDS */
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .field-group input, .field-group textarea, .field-group select {
+    background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; width: 100%;
+  }
+  .field-group input:focus, .field-group textarea:focus, .field-group select:focus { outline: none; border-color: var(--accent); }
+  .field-group textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+  .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fields-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .hint { font-size: 10px; color: var(--muted); }
+
+  /* SEND BUTTON */
+  .send-btn { align-self: flex-start; background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .send-btn:hover { background: var(--accent-hover); }
+  .send-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* RESPONSE */
+  .response-box { background: var(--input-bg); border: 1px solid var(--border); border-radius: 7px; padding: 12px; }
+  .response-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .status-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+  .status-ok  { background: rgba(16,185,129,.15); color: #10b981; }
+  .status-err { background: rgba(239,68,68,.15); color: #ef4444; }
+  .copy-btn { font-size: 11px; padding: 2px 8px; background: var(--border); border: none; color: var(--muted); border-radius: 5px; cursor: pointer; }
+  .copy-btn:hover { color: var(--text); }
+  .response-body { font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow-y: auto; color: #a3e635; }
+  .loading-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <h1>API Tester</h1>
+    <p>Laravel Shop v1</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">General</div>
+    <div class="nav-item active" onclick="showSection('health')">Health &amp; Shop</div>
+    <div class="nav-item" onclick="showSection('search')">Search</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Auth</div>
+    <div class="nav-item" onclick="showSection('auth')">Authentication</div>
+    <div class="nav-item" onclick="showSection('customer')">Customer Profile</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Catalog</div>
+    <div class="nav-item" onclick="showSection('products')">Products</div>
+    <div class="nav-item" onclick="showSection('categories')">Categories</div>
+    <div class="nav-item" onclick="showSection('collections')">Collections</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Shopping</div>
+    <div class="nav-item" onclick="showSection('cart')">Cart</div>
+    <div class="nav-item" onclick="showSection('checkout')">Checkout</div>
+    <div class="nav-item" onclick="showSection('orders')">Orders</div>
+    <div class="nav-item" onclick="showSection('discounts')">Discounts</div>
+    <div class="nav-item" onclick="showSection('shipping')">Shipping</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">CMS</div>
+    <div class="nav-item" onclick="showSection('cms')">Pages &amp; Blogs</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Staff</div>
+    <div class="nav-item" onclick="showSection('inventory')">Inventory</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="top-group">
+      <label>Base URL</label>
+      <input id="baseUrl" type="text" value="http://127.0.0.1:8000/api/v1" placeholder="http://127.0.0.1:8000/api/v1">
+    </div>
+    <div class="top-group">
+      <label>Bearer Token</label>
+      <input id="bearerToken" type="text" placeholder="Paste token after login..." oninput="saveToken()">
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ===== HEALTH & SHOP ===== -->
+    <div id="sec-health" class="section active">
+      <div class="section-title">Health &amp; Shop</div>
+
+      <!-- Health -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Health Check</span>
+          <span class="ep-url">/health</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this, 'GET', '/health')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Shop -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Shop Info</span>
+          <span class="ep-url">/shop</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this, 'GET', '/shop')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SEARCH ===== -->
+    <div id="sec-search" class="section">
+      <div class="section-title">Search</div>
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Search Products</span>
+          <span class="ep-url">/search?q=...</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group">
+            <label>Search Query (q)</label>
+            <input type="text" id="search-q" placeholder="e.g. watch strap, buckle">
+          </div>
+          <div class="fields-row">
+            <div class="field-group">
+              <label>Page</label>
+              <input type="number" id="search-page" value="1" min="1">
+            </div>
+            <div class="field-group">
+              <label>Per Page</label>
+              <input type="number" id="search-per" value="10">
+            </div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/search',null,{q:v('search-q'),page:v('search-page'),per_page:v('search-per')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AUTH ===== -->
+    <div id="sec-auth" class="section">
+      <div class="section-title">Authentication</div>
+
+      <!-- Register -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Register Customer</span>
+          <span class="ep-url">/auth/register</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>First Name</label><input id="reg-fname" type="text" value="Test"></div>
+            <div class="field-group"><label>Last Name</label><input id="reg-lname" type="text" value="User"></div>
+          </div>
+          <div class="field-group"><label>Email</label><input id="reg-email" type="email" value="test@example.com"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Password</label><input id="reg-pass" type="password" value="password"></div>
+            <div class="field-group"><label>Confirm Password</label><input id="reg-cpass" type="password" value="password"></div>
+          </div>
+          <div class="field-group"><label>Phone</label><input id="reg-phone" type="text" placeholder="+92-300-0000000"></div>
+          <button class="send-btn" onclick="send(this,'POST','/auth/register',{first_name:v('reg-fname'),last_name:v('reg-lname'),email:v('reg-email'),password:v('reg-pass'),password_confirmation:v('reg-cpass'),phone:v('reg-phone')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Login -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Login</span>
+          <span class="ep-url">/auth/login</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Email</label><input id="login-email" type="email" value="ahmed.khan@example.com"></div>
+          <div class="field-group"><label>Password</label><input id="login-pass" type="password" value="password"></div>
+          <p class="hint">After login, token will be auto-filled in the top bar.</p>
+          <button class="send-btn" onclick="sendLogin(this)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Forgot Password -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Forgot Password</span>
+          <span class="ep-url">/auth/forgot-password</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Email</label><input id="forgot-email" type="email" placeholder="customer@example.com"></div>
+          <button class="send-btn" onclick="send(this,'POST','/auth/forgot-password',{email:v('forgot-email')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Reset Password -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Reset Password</span>
+          <span class="ep-url">/auth/reset-password</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Token (from email)</label><input id="reset-token" type="text"></div>
+          <div class="field-group"><label>Email</label><input id="reset-email" type="email"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>New Password</label><input id="reset-pass" type="password"></div>
+            <div class="field-group"><label>Confirm Password</label><input id="reset-cpass" type="password"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'POST','/auth/reset-password',{token:v('reset-token'),email:v('reset-email'),password:v('reset-pass'),password_confirmation:v('reset-cpass')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Get Me (Auth) -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Get Me (Auth)</span>
+          <span class="ep-url">/auth/me</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <p class="hint">Requires Bearer Token in top bar.</p>
+          <button class="send-btn" onclick="send(this,'GET','/auth/me',null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Update Profile -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge PUT">PUT</span>
+          <span class="ep-title">Update Profile</span>
+          <span class="ep-url">/auth/profile</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>First Name</label><input id="upd-fname" type="text"></div>
+            <div class="field-group"><label>Last Name</label><input id="upd-lname" type="text"></div>
+          </div>
+          <div class="field-group"><label>Phone</label><input id="upd-phone" type="text"></div>
+          <button class="send-btn" onclick="send(this,'PUT','/auth/profile',{first_name:v('upd-fname'),last_name:v('upd-lname'),phone:v('upd-phone')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge PUT">PUT</span>
+          <span class="ep-title">Change Password</span>
+          <span class="ep-url">/auth/change-password</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Current Password</label><input id="cp-curr" type="password" value="password"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>New Password</label><input id="cp-new" type="password"></div>
+            <div class="field-group"><label>Confirm</label><input id="cp-conf" type="password"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'PUT','/auth/change-password',{current_password:v('cp-curr'),password:v('cp-new'),password_confirmation:v('cp-conf')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Logout</span>
+          <span class="ep-url">/auth/logout</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <p class="hint">Requires Bearer Token. Will invalidate your current token.</p>
+          <button class="send-btn" onclick="send(this,'POST','/auth/logout',{},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CUSTOMER ===== -->
+    <div id="sec-customer" class="section">
+      <div class="section-title">Customer Profile &amp; Addresses</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">My Profile</span>
+          <span class="ep-url">/customers/me</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/customers/me',null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge PUT">PUT</span>
+          <span class="ep-title">Update My Profile</span>
+          <span class="ep-url">/customers/me</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>First Name</label><input id="cust-fn" type="text"></div>
+            <div class="field-group"><label>Last Name</label><input id="cust-ln" type="text"></div>
+          </div>
+          <div class="field-group"><label>Phone</label><input id="cust-ph" type="text"></div>
+          <button class="send-btn" onclick="send(this,'PUT','/customers/me',{first_name:v('cust-fn'),last_name:v('cust-ln'),phone:v('cust-ph')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">My Orders</span>
+          <span class="ep-url">/customers/me/orders</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/customers/me/orders',null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">My Addresses</span>
+          <span class="ep-url">/customers/me/addresses</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/customers/me/addresses',null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Add Address</span>
+          <span class="ep-url">/customers/me/addresses</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>First Name</label><input id="addr-fn" type="text" value="Ahmed"></div>
+            <div class="field-group"><label>Last Name</label><input id="addr-ln" type="text" value="Khan"></div>
+          </div>
+          <div class="field-group"><label>Address 1</label><input id="addr-a1" type="text" value="123 Street"></div>
+          <div class="field-group"><label>Address 2</label><input id="addr-a2" type="text"></div>
+          <div class="fields-row-3">
+            <div class="field-group"><label>City</label><input id="addr-city" type="text" value="Islamabad"></div>
+            <div class="field-group"><label>Province</label><input id="addr-prov" type="text" value="Punjab"></div>
+            <div class="field-group"><label>ZIP</label><input id="addr-zip" type="text" value="44000"></div>
+          </div>
+          <div class="fields-row">
+            <div class="field-group"><label>Country Code</label><input id="addr-country" type="text" value="PK"></div>
+            <div class="field-group"><label>Phone</label><input id="addr-phone" type="text" value="+92300000000"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'POST','/customers/me/addresses',{first_name:v('addr-fn'),last_name:v('addr-ln'),address1:v('addr-a1'),address2:v('addr-a2'),city:v('addr-city'),province:v('addr-prov'),zip:v('addr-zip'),country_code:v('addr-country'),phone:v('addr-phone')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge PUT">PUT</span>
+          <span class="ep-title">Update Address</span>
+          <span class="ep-url">/customers/me/addresses/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Address ID</label><input id="uaddr-id" type="number" placeholder="1"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>City</label><input id="uaddr-city" type="text"></div>
+            <div class="field-group"><label>ZIP</label><input id="uaddr-zip" type="text"></div>
+          </div>
+          <div class="field-group"><label>Address 1</label><input id="uaddr-a1" type="text"></div>
+          <button class="send-btn" onclick="send(this,'PUT','/customers/me/addresses/'+v('uaddr-id'),{city:v('uaddr-city'),zip:v('uaddr-zip'),address1:v('uaddr-a1')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge PUT">PUT</span>
+          <span class="ep-title">Set Default Address</span>
+          <span class="ep-url">/customers/me/addresses/{id}/default</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Address ID</label><input id="daddr-id" type="number" placeholder="1"></div>
+          <button class="send-btn" onclick="send(this,'PUT','/customers/me/addresses/'+v('daddr-id')+'/default',{},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge DELETE">DELETE</span>
+          <span class="ep-title">Delete Address</span>
+          <span class="ep-url">/customers/me/addresses/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Address ID</label><input id="deladdr-id" type="number" placeholder="1"></div>
+          <button class="send-btn" onclick="send(this,'DELETE','/customers/me/addresses/'+v('deladdr-id'),null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PRODUCTS ===== -->
+    <div id="sec-products" class="section">
+      <div class="section-title">Products</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Products</span>
+          <span class="ep-url">/products</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="prod-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="prod-per" type="number" value="10"></div>
+          </div>
+          <div class="fields-row">
+            <div class="field-group"><label>Category (slug)</label><input id="prod-cat" type="text" placeholder="watch-straps"></div>
+            <div class="field-group"><label>Sort By</label>
+              <select id="prod-sort">
+                <option value="">Default</option>
+                <option value="price_asc">Price Low→High</option>
+                <option value="price_desc">Price High→Low</option>
+                <option value="newest">Newest</option>
+              </select>
+            </div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/products',null,{page:v('prod-page'),per_page:v('prod-per'),category:v('prod-cat'),sort:v('prod-sort')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Products Count</span>
+          <span class="ep-url">/products/count</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/products/count')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Get Product by ID</span>
+          <span class="ep-url">/products/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Product ID</label><input id="prod-id" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'GET','/products/'+v('prod-id'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Get Product by Handle (slug)</span>
+          <span class="ep-url">/products/handle/{slug}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Slug / Handle</label><input id="prod-slug" type="text" placeholder="black-leather-strap"></div>
+          <button class="send-btn" onclick="send(this,'GET','/products/handle/'+v('prod-slug'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CATEGORIES ===== -->
+    <div id="sec-categories" class="section">
+      <div class="section-title">Product Categories</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Categories</span>
+          <span class="ep-url">/product-categories</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/product-categories')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Category</span>
+          <span class="ep-url">/product-categories/{slug}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Category Slug</label><input id="cat-slug" type="text" placeholder="watch-straps"></div>
+          <button class="send-btn" onclick="send(this,'GET','/product-categories/'+v('cat-slug'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Products in Category</span>
+          <span class="ep-url">/product-categories/{slug}/products</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Category Slug</label><input id="cat-prod-slug" type="text" placeholder="watch-straps"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="cat-prod-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="cat-prod-per" type="number" value="10"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/product-categories/'+v('cat-prod-slug')+'/products',null,{page:v('cat-prod-page'),per_page:v('cat-prod-per')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COLLECTIONS ===== -->
+    <div id="sec-collections" class="section">
+      <div class="section-title">Collections</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Collections</span>
+          <span class="ep-url">/collections</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="col-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="col-per" type="number" value="10"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/collections',null,{page:v('col-page'),per_page:v('col-per')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Collections Count</span>
+          <span class="ep-url">/collections/count</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/collections/count')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Collection</span>
+          <span class="ep-url">/collections/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Collection ID</label><input id="col-id" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'GET','/collections/'+v('col-id'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Collection by Handle</span>
+          <span class="ep-url">/collections/handle/{slug}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Slug / Handle</label><input id="col-slug" type="text" placeholder="summer-collection"></div>
+          <button class="send-btn" onclick="send(this,'GET','/collections/handle/'+v('col-slug'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Products in Collection</span>
+          <span class="ep-url">/collections/{id}/products</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Collection ID</label><input id="col-prod-id" type="number" value="1"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="col-prod-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="col-prod-per" type="number" value="10"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/collections/'+v('col-prod-id')+'/products',null,{page:v('col-prod-page'),per_page:v('col-prod-per')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CART ===== -->
+    <div id="sec-cart" class="section">
+      <div class="section-title">Cart</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Cart</span>
+          <span class="ep-url">/cart</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/cart')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Add to Cart</span>
+          <span class="ep-url">/cart/add</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Variant ID</label><input id="cart-variant" type="number" value="1"></div>
+            <div class="field-group"><label>Quantity</label><input id="cart-qty" type="number" value="1" min="1"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'POST','/cart/add',{variant_id:parseInt(v('cart-variant')),quantity:parseInt(v('cart-qty'))})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Update Cart Item</span>
+          <span class="ep-url">/cart/update</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Variant ID</label><input id="cart-upd-variant" type="number" value="1"></div>
+            <div class="field-group"><label>New Quantity</label><input id="cart-upd-qty" type="number" value="2" min="0"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'POST','/cart/update',{variant_id:parseInt(v('cart-upd-variant')),quantity:parseInt(v('cart-upd-qty'))})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Remove Cart Item</span>
+          <span class="ep-url">/cart/remove</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Variant ID</label><input id="cart-rm-variant" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'POST','/cart/remove',{variant_id:parseInt(v('cart-rm-variant'))})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Apply Discount to Cart</span>
+          <span class="ep-url">/cart/apply-discount</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Discount Code</label><input id="cart-disc" type="text" placeholder="SAVE10"></div>
+          <button class="send-btn" onclick="send(this,'POST','/cart/apply-discount',{code:v('cart-disc')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Cart Shipping Rates</span>
+          <span class="ep-url">/cart/shipping-rates</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/cart/shipping-rates')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Clear Cart</span>
+          <span class="ep-url">/cart/clear</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'POST','/cart/clear',{})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CHECKOUT ===== -->
+    <div id="sec-checkout" class="section">
+      <div class="section-title">Checkout</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Validate Checkout</span>
+          <span class="ep-url">/checkout/validate</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group">
+            <label>Request Body (JSON)</label>
+            <textarea id="checkout-body">{
+  "email": "customer@example.com",
+  "shipping_address": {
+    "first_name": "Ahmed",
+    "last_name": "Khan",
+    "address1": "123 Street",
+    "city": "Islamabad",
+    "country_code": "PK",
+    "zip": "44000"
+  },
+  "shipping_method_id": 1
+}</textarea>
+          </div>
+          <button class="send-btn" onclick="sendRaw(this,'POST','/checkout/validate','checkout-body')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ORDERS ===== -->
+    <div id="sec-orders" class="section">
+      <div class="section-title">Orders</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Place Order</span>
+          <span class="ep-url">/orders</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group">
+            <label>Request Body (JSON)</label>
+            <textarea id="order-body">{
+  "email": "customer@example.com",
+  "shipping_address": {
+    "first_name": "Ahmed",
+    "last_name": "Khan",
+    "address1": "123 Street",
+    "city": "Islamabad",
+    "country_code": "PK",
+    "zip": "44000",
+    "phone": "+923001111111"
+  },
+  "shipping_method_id": 1,
+  "payment_method": "cod",
+  "note": "Please deliver before 5pm"
+}</textarea>
+          </div>
+          <button class="send-btn" onclick="sendRaw(this,'POST','/orders','order-body')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Get Order</span>
+          <span class="ep-url">/orders/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Order ID</label><input id="order-id" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'GET','/orders/'+v('order-id'),null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Cancel Order</span>
+          <span class="ep-url">/orders/{id}/cancel</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Order ID</label><input id="cancel-order-id" type="number" value="1"></div>
+          <div class="field-group"><label>Reason (optional)</label><input id="cancel-reason" type="text" placeholder="Customer requested cancellation"></div>
+          <button class="send-btn" onclick="send(this,'POST','/orders/'+v('cancel-order-id')+'/cancel',{reason:v('cancel-reason')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DISCOUNTS ===== -->
+    <div id="sec-discounts" class="section">
+      <div class="section-title">Discounts</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Lookup Discount Code</span>
+          <span class="ep-url">/discount_codes/lookup</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Discount Code</label><input id="disc-code" type="text" placeholder="SAVE10"></div>
+          <button class="send-btn" onclick="send(this,'POST','/discount_codes/lookup',{code:v('disc-code')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SHIPPING ===== -->
+    <div id="sec-shipping" class="section">
+      <div class="section-title">Shipping</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Get Shipping Rates</span>
+          <span class="ep-url">/shipping/rates</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/shipping/rates')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Estimate Shipping</span>
+          <span class="ep-url">/shipping/estimate</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Country Code</label><input id="ship-country" type="text" value="PK"></div>
+            <div class="field-group"><label>ZIP / Postal Code</label><input id="ship-zip" type="text" value="44000"></div>
+          </div>
+          <div class="field-group"><label>City</label><input id="ship-city" type="text" value="Islamabad"></div>
+          <button class="send-btn" onclick="send(this,'POST','/shipping/estimate',{country_code:v('ship-country'),zip:v('ship-zip'),city:v('ship-city')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CMS ===== -->
+    <div id="sec-cms" class="section">
+      <div class="section-title">CMS — Pages &amp; Blogs</div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Pages</span>
+          <span class="ep-url">/pages</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/pages')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Page</span>
+          <span class="ep-url">/pages/{handle}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Page Handle</label><input id="page-handle" type="text" placeholder="about-us"></div>
+          <button class="send-btn" onclick="send(this,'GET','/pages/'+v('page-handle'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Blogs</span>
+          <span class="ep-url">/blogs</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <button class="send-btn" onclick="send(this,'GET','/blogs')">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Blog</span>
+          <span class="ep-url">/blogs/{handle}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Blog Handle</label><input id="blog-handle" type="text" placeholder="news"></div>
+          <button class="send-btn" onclick="send(this,'GET','/blogs/'+v('blog-handle'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Blog Articles</span>
+          <span class="ep-url">/blogs/{handle}/articles</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Blog Handle</label><input id="blog-art-handle" type="text" placeholder="news"></div>
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="blog-art-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="blog-art-per" type="number" value="10"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/blogs/'+v('blog-art-handle')+'/articles',null,{page:v('blog-art-page'),per_page:v('blog-art-per')})">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Show Article</span>
+          <span class="ep-url">/articles/{id}</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Article ID</label><input id="article-id" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'GET','/articles/'+v('article-id'))">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INVENTORY ===== -->
+    <div id="sec-inventory" class="section">
+      <div class="section-title">Inventory (Staff — Sanctum Token Required)</div>
+      <p style="color:var(--yellow);font-size:12px;padding:4px 0;">These endpoints require a Sanctum admin/staff token in the top bar.</p>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">List Inventory</span>
+          <span class="ep-url">/inventory</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Page</label><input id="inv-page" type="number" value="1"></div>
+            <div class="field-group"><label>Per Page</label><input id="inv-per" type="number" value="20"></div>
+          </div>
+          <button class="send-btn" onclick="send(this,'GET','/inventory',null,{page:v('inv-page'),per_page:v('inv-per')},true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Adjust Inventory</span>
+          <span class="ep-url">/inventory/adjust</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="fields-row">
+            <div class="field-group"><label>Inventory Item ID</label><input id="inv-adj-item" type="number" value="1"></div>
+            <div class="field-group"><label>Adjustment Qty (+/-)</label><input id="inv-adj-qty" type="number" value="5"></div>
+          </div>
+          <div class="field-group"><label>Reason</label><input id="inv-adj-reason" type="text" placeholder="correction, received, damaged..."></div>
+          <button class="send-btn" onclick="send(this,'POST','/inventory/adjust',{inventory_item_id:parseInt(v('inv-adj-item')),adjustment:parseInt(v('inv-adj-qty')),reason:v('inv-adj-reason')},null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge POST">POST</span>
+          <span class="ep-title">Transfer Inventory</span>
+          <span class="ep-url">/inventory/transfer</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group">
+            <label>Request Body (JSON)</label>
+            <textarea id="inv-transfer-body">{
+  "inventory_item_id": 1,
+  "from_location_id": 1,
+  "to_location_id": 2,
+  "quantity": 5
+}</textarea>
+          </div>
+          <button class="send-btn" onclick="sendRaw(this,'POST','/inventory/transfer','inv-transfer-body',true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="ep-card">
+        <div class="ep-header" onclick="toggleEp(this)">
+          <span class="method-badge GET">GET</span>
+          <span class="ep-title">Inventory History</span>
+          <span class="ep-url">/inventory/{item}/history</span>
+          <span class="ep-toggle">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="field-group"><label>Inventory Item ID</label><input id="inv-hist-id" type="number" value="1"></div>
+          <button class="send-btn" onclick="send(this,'GET','/inventory/'+v('inv-hist-id')+'/history',null,null,true)">Send Request</button>
+          <div class="response-box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+  // ─── Helpers ───────────────────────────────────────────────
+  const v = id => (document.getElementById(id)||{}).value || '';
+  const $ = id => document.getElementById(id);
+
+  // Load token from localStorage
+  window.addEventListener('load', () => {
+    const t = localStorage.getItem('api_token');
+    if (t) $('bearerToken').value = t;
+  });
+  function saveToken() { localStorage.setItem('api_token', $('bearerToken').value); }
+
+  // ─── Navigation ────────────────────────────────────────────
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const sec = $('sec-' + name);
+    if (sec) sec.classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  // ─── Toggle endpoint body ───────────────────────────────────
+  function toggleEp(header) {
+    const body = header.nextElementSibling;
+    const toggle = header.querySelector('.ep-toggle');
+    const isOpen = body.classList.toggle('open');
+    toggle.style.transform = isOpen ? 'rotate(180deg)' : '';
+  }
+
+  // ─── Core send ─────────────────────────────────────────────
+  async function send(btn, method, path, body = null, query = null, auth = false) {
+    const base = $('baseUrl').value.replace(/\/$/, '');
+    let url = base + path;
+
+    // Build query string (skip empty values)
+    if (query) {
+      const q = Object.entries(query).filter(([,v]) => v !== '' && v !== null && v !== undefined);
+      if (q.length) url += '?' + q.map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+    }
+
+    const responseBox = btn.nextElementSibling;
+    responseBox.style.display = 'block';
+    responseBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div class="loading-spinner"></div><span style="color:var(--muted)">Sending...</span></div>';
+    btn.disabled = true;
+
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    if (auth || $('bearerToken').value) {
+      const tok = $('bearerToken').value;
+      if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    }
+
+    try {
+      const opts = { method, headers };
+      if (body && method !== 'GET') opts.body = JSON.stringify(body);
+
+      const res = await fetch(url, opts);
+      const text = await res.text();
+      let pretty = text;
+      try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+
+      const ok = res.status >= 200 && res.status < 300;
+      responseBox.innerHTML = `
+        <div class="response-meta">
+          <span class="status-badge ${ok?'status-ok':'status-err'}">${res.status} ${res.statusText}</span>
+          <span style="font-size:11px;color:var(--muted)">${method} ${url}</span>
+          <button class="copy-btn" onclick="copyText(this, \`${escJ(pretty)}\`)">Copy</button>
+        </div>
+        <div class="response-body">${escH(pretty)}</div>`;
+    } catch (err) {
+      responseBox.innerHTML = `<div class="response-meta"><span class="status-badge status-err">Network Error</span></div><div class="response-body" style="color:#ef4444">${escH(err.message)}</div>`;
+    }
+    btn.disabled = false;
+  }
+
+  async function sendRaw(btn, method, path, textareaId, auth = false) {
+    let parsed;
+    try { parsed = JSON.parse(v(textareaId)); }
+    catch(e) {
+      const rb = btn.nextElementSibling;
+      rb.style.display='block';
+      rb.innerHTML = `<div class="response-meta"><span class="status-badge status-err">JSON Error</span></div><div class="response-body" style="color:#ef4444">${escH(e.message)}</div>`;
+      return;
+    }
+    await send(btn, method, path, parsed, null, auth);
+  }
+
+  async function sendLogin(btn) {
+    const base = $('baseUrl').value.replace(/\/$/, '');
+    const url = base + '/auth/login';
+    const responseBox = btn.nextElementSibling;
+    responseBox.style.display = 'block';
+    responseBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div class="loading-spinner"></div><span style="color:var(--muted)">Sending...</span></div>';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: v('login-email'), password: v('login-pass') })
+      });
+      const json = await res.json();
+      const pretty = JSON.stringify(json, null, 2);
+
+      // Auto-fill token
+      const token = json?.data?.token || json?.token || json?.access_token;
+      if (token) {
+        $('bearerToken').value = token;
+        localStorage.setItem('api_token', token);
+      }
+
+      const ok = res.status >= 200 && res.status < 300;
+      responseBox.innerHTML = `
+        <div class="response-meta">
+          <span class="status-badge ${ok?'status-ok':'status-err'}">${res.status} ${res.statusText}</span>
+          ${token ? '<span style="font-size:11px;color:var(--green)">✓ Token auto-filled</span>' : ''}
+          <button class="copy-btn" onclick="copyText(this, \`${escJ(pretty)}\`)">Copy</button>
+        </div>
+        <div class="response-body">${escH(pretty)}</div>`;
+    } catch(err) {
+      responseBox.innerHTML = `<div class="response-meta"><span class="status-badge status-err">Network Error</span></div><div class="response-body" style="color:#ef4444">${escH(err.message)}</div>`;
+    }
+    btn.disabled = false;
+  }
+
+  function copyText(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  function escH(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escJ(s) {
+    return String(s).replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+  }
+</script>
+</body>
+</html>

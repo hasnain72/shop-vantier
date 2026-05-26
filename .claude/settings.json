@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/products?per_page=2)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/product-categories)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/shop)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/collections?per_page=2)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/blogs)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/products/55)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/cart -H \"Accept: application/json\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/search?q=watch\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/collections/1/products\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/blogs/watch-reviews/articles\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/blogs/watch-reviews\")",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"ahmed.khan@example.com\",\"password\":\"password\"}')",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/collections/1\")",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/auth/me -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272')",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/cart -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272' -H 'Accept: application/json')",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/customers/me/orders -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272')",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/customers/me/addresses -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272')",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/v1/cart/add -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272' -H 'Content-Type: application/json' -d '{\"variant_id\":1,\"quantity\":1}')",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/v1/cart/add -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272' -H 'Content-Type: application/json' -d '{\"items\":[{\"variant_id\":1,\"quantity\":1}]}')",
+      "Bash(curl -s -X GET http://127.0.0.1:8000/api/v1/shipping/rates -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272' -H 'Content-Type: application/json')",
+      "Bash(curl -s -X GET 'http://127.0.0.1:8000/api/v1/cart/shipping-rates?country_code=PK&zip=44000' -H 'Authorization: Bearer 1|NkIF0J6lMJRR6IPDgawq6kp7RhqdrgiBgpFEBo9F7a8cb272')",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/health)",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/shop\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\), '| data keys:', list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\).__name__\\)\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/products?per_page=2\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('top keys:', list\\(d.keys\\(\\)\\)\\); print\\('data keys:', list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\).__name__\\); print\\('meta keys:', list\\(d.get\\('meta',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('meta'\\),dict\\) else 'no meta'\\)\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/product-categories\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('top keys:', list\\(d.keys\\(\\)\\)\\); k=list\\(d.get\\('data',{}\\).keys\\(\\)\\) if isinstance\\(d.get\\('data'\\),dict\\) else type\\(d.get\\('data'\\)\\).__name__; print\\('data keys:', k\\)\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/collections\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/products?per_page=1\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); p=d['data']['products'][0]; imgs=p.get\\('images',[]\\); print\\('image src:', imgs[0]['src'] if imgs else 'no images'\\); print\\('featured:', p.get\\('featured_image','none'\\)\\)\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/api/v1/products/57\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); p=d['data']['product']; print\\('keys:', list\\(p.keys\\(\\)\\)\\)\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); p=d['data']['product']; print\\(json.dumps\\(p['addons'], indent=2\\)\\)\")",
+      "Bash(python -c ' *)"
+    ]
+  }
+}

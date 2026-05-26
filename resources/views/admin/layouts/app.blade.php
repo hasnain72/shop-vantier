@@ -191,6 +191,13 @@
               <span class="admin-label">Blog</span>
             </a>
           </li>
+          <li>
+            <a href="{{ route('admin.home.settings') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.home.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-house fa-fw"></i>
+              <span class="admin-label">Home Page</span>
+            </a>
+          </li>
 
           {{-- Analytics & Config --}}
           <li class="admin-group-label">Analytics & Config</li>

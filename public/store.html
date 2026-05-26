@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronosouq — Watch Accessories</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0c;--surface:#161616;--card:#1e1e1e;--border:#2a2a2a;
+  --gold:#c9a96e;--gold2:#e8cc9a;
+  --text:#f0f0f0;--muted:#888;--danger:#ef4444;--success:#10b981;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+img{display:block;max-width:100%}
+input,select,textarea{font-family:inherit;color:var(--text)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HEADER */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(12,12,12,.96);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;height:64px;
+  display:flex;align-items:center;gap:28px;
+}
+.logo{font-size:17px;font-weight:800;letter-spacing:3px;color:var(--gold);cursor:pointer;white-space:nowrap}
+.nav-links{display:flex;gap:24px}
+.nav-links a{font-size:13px;color:var(--muted);cursor:pointer;transition:color .2s;letter-spacing:.4px}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.hdr-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.srch-wrap{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;gap:8px;width:190px}
+.srch-wrap input{background:none;border:none;color:var(--text);font-size:13px;outline:none;width:100%}
+.srch-wrap input::placeholder{color:var(--muted)}
+.icon-btn{background:none;border:none;color:var(--muted);font-size:19px;padding:5px;border-radius:6px;position:relative;transition:color .2s}
+.icon-btn:hover{color:var(--text)}
+.badge{position:absolute;top:-1px;right:-1px;background:var(--gold);color:#000;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.auth-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:6px;font-size:13px;transition:all .2s}
+.auth-btn:hover{border-color:var(--gold);color:var(--gold)}
+.user-chip{font-size:13px;color:var(--gold);cursor:pointer;font-weight:600}
+
+/* VIEWS */
+#app{min-height:calc(100vh - 64px)}
+.view{display:none}
+.view.active{display:block}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.t-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:10px;animation:tslide .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:300px}
+.t-item.ok{border-color:var(--success)}
+.t-item.err{border-color:var(--danger)}
+@keyframes tslide{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:420px;position:relative}
+.mclose{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:20px;line-height:1}
+.mclose:hover{color:var(--text)}
+
+/* COMMON UI */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 24px;border-radius:7px;font-size:14px;font-weight:600;border:none;transition:all .2s;cursor:pointer}
+.btn-gold{background:var(--gold);color:#000}
+.btn-gold:hover{background:var(--gold2)}
+.btn-out{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn-out:hover{border-color:var(--gold);color:var(--gold)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fld label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.fld input,.fld select,.fld textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:7px;font-size:14px;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--gold)}
+.fld textarea{resize:vertical;min-height:80px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+.sec-title{font-size:22px;font-weight:800;letter-spacing:.4px;margin-bottom:4px}
+.sec-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
+.pw{max-width:1200px;margin:0 auto;padding:40px 24px}
+.spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{display:flex;justify-content:center;align-items:center;padding:80px;gap:12px;color:var(--muted)}
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty .ico{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;color:var(--text);margin-bottom:8px}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;display:inline-block;font-weight:700}
+.tg{background:rgba(201,169,110,.15);color:var(--gold)}
+.tgreen{background:rgba(16,185,129,.15);color:var(--success)}
+.tred{background:rgba(239,68,68,.15);color:var(--danger)}
+
+/* PRODUCT CARD */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s}
+.pcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.pcard .imgw{aspect-ratio:1;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pcard .imgw img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.pcard:hover .imgw img{transform:scale(1.05)}
+.pcard .iph{font-size:52px;color:var(--border)}
+.pcard .inf{padding:14px 16px}
+.pcard .pname{font-size:14px;font-weight:600;margin-bottom:6px;line-height:1.35}
+.pcard .pprice{font-size:16px;font-weight:700;color:var(--gold)}
+.pcard .pcomp{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:6px}
+.pcard .pven{font-size:11px;color:var(--muted);margin-bottom:4px}
+
+/* PAGINATION */
+.pages{display:flex;gap:8px;justify-content:center;margin-top:32px;flex-wrap:wrap}
+.pgbtn{min-width:36px;height:36px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;transition:all .2s}
+.pgbtn:hover{border-color:var(--gold);color:var(--gold)}
+.pgbtn.on{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.tbtn{padding:10px 20px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tbtn:hover{color:var(--text)}
+.tbtn.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tpanel{display:none}
+.tpanel.on{display:block}
+
+/* BREADCRUMB */
+.bc{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:20px;flex-wrap:wrap}
+.bc span{cursor:pointer}
+.bc span:hover{color:var(--gold)}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:36px;text-align:center;color:var(--muted);font-size:13px;margin-top:60px}
+footer .flinks{display:flex;justify-content:center;gap:24px;margin-bottom:14px;flex-wrap:wrap}
+footer .flinks span{cursor:pointer;transition:color .2s}
+footer .flinks span:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo" onclick="go('home')">CHRONOSOUQ</div>
+  <nav class="nav-links">
+    <a data-r="home"        onclick="go('home')">Home</a>
+    <a data-r="products"    onclick="go('products')">Products</a>
+    <a data-r="collections" onclick="go('collections')">Collections</a>
+    <a data-r="blogs"       onclick="go('blogs')">Blog</a>
+  </nav>
+  <div class="hdr-right">
+    <div class="srch-wrap">
+      <span style="color:var(--muted)">🔍</span>
+      <input placeholder="Search…" id="g-search" onkeydown="if(event.key==='Enter')go('search',{q:this.value})">
+    </div>
+    <button class="icon-btn" onclick="go('cart')" title="Cart">
+      🛒<span class="badge" id="cart-badge" style="display:none">0</span>
+    </button>
+    <div id="auth-area">
+      <button class="auth-btn" onclick="openModal()">Login / Register</button>
+    </div>
+  </div>
+</header>
+
+<!-- VIEWS -->
+<div id="app">
+  <div id="v-home"        class="view active"></div>
+  <div id="v-products"    class="view"></div>
+  <div id="v-product"     class="view"></div>
+  <div id="v-collections" class="view"></div>
+  <div id="v-collection"  class="view"></div>
+  <div id="v-cart"        class="view"></div>
+  <div id="v-checkout"    class="view"></div>
+  <div id="v-success"     class="view"></div>
+  <div id="v-account"     class="view"></div>
+  <div id="v-blogs"       class="view"></div>
+  <div id="v-blog"        class="view"></div>
+  <div id="v-search"      class="view"></div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="modal-bg">
+  <div class="modal-box">
+    <button class="mclose" onclick="closeModal()">✕</button>
+    <div class="tabs" style="margin-bottom:24px">
+      <button class="tbtn on" onclick="authTab('login',this)">Login</button>
+      <button class="tbtn"    onclick="authTab('register',this)">Register</button>
+    </div>
+    <div id="ap-login" class="tpanel on">
+      <div class="fld"><label>Email</label><input id="l-em" type="email" value="ahmed.khan@example.com"></div>
+      <div class="fld"><label>Password</label><input id="l-pw" type="password" value="password"></div>
+      <button class="btn btn-gold" style="width:100%" onclick="doLogin()">Login</button>
+      <div id="l-err" style="color:var(--danger);font-size:12px;margin-top:8px"></div>
+    </div>
+    <div id="ap-register" class="tpanel">
+      <div class="g2">
+        <div class="fld"><label>First Name</label><input id="r-fn"></div>
+        <div class="fld"><label>Last Name</label><input id="r-ln"></div>
+      </div>
+      <div class="fld"><label>Email</label><input id="r-em" type="email"></div>
+      <div class="fld"><label>Phone</label><input id="r-ph" placeholder="+92..."></div>
+      <div class="g2">
+        <div class="fld"><label>Password</label><input id="r-pw" type="password"></div>
+        <div class="fld"><label>Confirm</label><input id="r-cp" type="password"></div>
+      </div>
+      <button class="btn btn-gold" style="width:100%" onclick="doRegister()">Create Account</button>
+      <div id="r-err" style="color:var(--danger);font-size:12px;margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<footer>
+  <div class="flinks">
+    <span onclick="go('home')">Home</span>
+    <span onclick="go('products')">Products</span>
+    <span onclick="go('collections')">Collections</span>
+    <span onclick="go('blogs')">Blog</span>
+    <span onclick="go('account')">My Account</span>
+    <span onclick="go('cart')">Cart</span>
+  </div>
+  <p>© 2025 Chronosouq — Premium Watch Accessories</p>
+</footer>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const BASE = 'https://vantierapi.chronosouq.com/api/v1';
+
+const S = {
+  token:     localStorage.getItem('cq_token')  || null,
+  cartTok:   localStorage.getItem('cq_cart')   || null,
+  user:      null,
+  cart:      null,
+};
+
+// ─── API ──────────────────────────────────────────────────
+async function req(method, path, body, qs) {
+  let url = BASE + path;
+  if (qs) {
+    const p = Object.entries(qs).filter(([,v]) => v !== '' && v != null);
+    if (p.length) url += '?' + p.map(([k,v]) => k + '=' + encodeURIComponent(v)).join('&');
+  }
+  const h = { 'Content-Type': 'application/json', Accept: 'application/json' };
+  if (S.token)   h['Authorization'] = 'Bearer ' + S.token;
+  if (S.cartTok) h['X-Cart-Token']  = S.cartTok;
+  const o = { method, headers: h };
+  if (body && method !== 'GET') o.body = JSON.stringify(body);
+  const r = await fetch(url, o);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw j;
+  return j;
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+function toast(msg, type) {
+  const d = document.createElement('div');
+  d.className = 't-item ' + (type === 'err' ? 'err' : 'ok');
+  d.innerHTML = '<span>' + (type === 'err' ? '✕' : '✓') + '</span><span>' + msg + '</span>';
+  document.getElementById('toast-wrap').appendChild(d);
+  setTimeout(() => d.remove(), 3500);
+}
+
+// ─── MONEY ────────────────────────────────────────────────
+function money(n) {
+  if (n == null) return '—';
+  return '$' + parseFloat(n).toFixed(2);
+}
+
+// ─── ROUTER ───────────────────────────────────────────────
+function go(route, params) {
+  params = params || {};
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var el = document.getElementById('v-' + route);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('[data-r]').forEach(function(a){
+    a.classList.toggle('active', a.dataset.r === route);
+  });
+  window.scrollTo(0, 0);
+  if (route === 'home')        pageHome();
+  if (route === 'products')    pageProducts(params);
+  if (route === 'product')     pageProduct(params.id);
+  if (route === 'collections') pageCollections();
+  if (route === 'collection')  pageCollection(params.id);
+  if (route === 'cart')        pageCart();
+  if (route === 'checkout')    pageCheckout();
+  if (route === 'account')     pageAccount();
+  if (route === 'blogs')       pageBlogs();
+  if (route === 'blog')        pageBlog(params.handle);
+  if (route === 'search')      pageSearch(params.q);
+}
+
+function spin(id) {
+  document.getElementById(id).innerHTML = '<div class="loading"><div class="spin"></div></div>';
+}
+
+// ─── AUTH ─────────────────────────────────────────────────
+function openModal()  { document.getElementById('auth-modal').classList.add('open'); }
+function closeModal() { document.getElementById('auth-modal').classList.remove('open'); }
+document.getElementById('auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function authTab(tab, btn) {
+  document.querySelectorAll('#auth-modal .tbtn').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('#auth-modal .tpanel').forEach(function(p){ p.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('ap-' + tab).classList.add('on');
+}
+
+async function doLogin() {
+  document.getElementById('l-err').textContent = '';
+  try {
+    var res = await req('POST', '/auth/login', {
+      email:    document.getElementById('l-em').value,
+      password: document.getElementById('l-pw').value
+    });
+    // EXACT structure: { data: { token: "...", customer: {...} } }
+    S.token = res.data.token;
+    S.user  = res.data.customer;
+    localStorage.setItem('cq_token', S.token);
+    closeModal();
+    toast('Welcome back, ' + (S.user.first_name || 'Customer') + '!');
+    renderAuthUI();
+    await fetchCart();
+  } catch(e) {
+    document.getElementById('l-err').textContent = (e && e.message) || 'Login failed';
+  }
+}
+
+async function doRegister() {
+  document.getElementById('r-err').textContent = '';
+  try {
+    var res = await req('POST', '/auth/register', {
+      first_name:            document.getElementById('r-fn').value,
+      last_name:             document.getElementById('r-ln').value,
+      email:                 document.getElementById('r-em').value,
+      phone:                 document.getElementById('r-ph').value,
+      password:              document.getElementById('r-pw').value,
+      password_confirmation: document.getElementById('r-cp').value
+    });
+    S.token = res.data.token;
+    S.user  = res.data.customer;
+    localStorage.setItem('cq_token', S.token);
+    closeModal();
+    toast('Account created! Welcome 🎉');
+    renderAuthUI();
+  } catch(e) {
+    var errs = e && e.errors;
+    var msg = errs ? Object.values(errs)[0][0] : ((e && e.message) || 'Registration failed');
+    document.getElementById('r-err').textContent = msg;
+  }
+}
+
+async function doLogout() {
+  try { await req('POST', '/auth/logout'); } catch(e) {}
+  S.token = null; S.user = null; S.cart = null;
+  localStorage.removeItem('cq_token');
+  renderAuthUI();
+  updateBadge();
+  toast('Logged out');
+  go('home');
+}
+
+function renderAuthUI() {
+  var a = document.getElementById('auth-area');
+  if (S.user) {
+    a.innerHTML = '<span class="user-chip" onclick="go(\'account\')">' + (S.user.first_name || 'Account') + '</span>'
+      + '<button class="auth-btn" style="margin-left:10px" onclick="doLogout()">Logout</button>';
+  } else {
+    a.innerHTML = '<button class="auth-btn" onclick="openModal()">Login / Register</button>';
+  }
+}
+
+async function fetchMe() {
+  try {
+    var res = await req('GET', '/auth/me');
+    // EXACT: { data: { customer: {...} } }
+    S.user = res.data.customer;
+  } catch(e) {
+    S.token = null;
+    localStorage.removeItem('cq_token');
+  }
+}
+
+// ─── CART BADGE ───────────────────────────────────────────
+function updateBadge() {
+  var b = document.getElementById('cart-badge');
+  var n = (S.cart && S.cart.item_count) ? S.cart.item_count : 0;
+  b.textContent = n;
+  b.style.display = n ? 'flex' : 'none';
+}
+
+async function fetchCart() {
+  try {
+    var res = await req('GET', '/cart');
+    // EXACT: { success:true, data: { token, items:[...], item_count, total_price, total_discount } }
+    S.cart = res.data;
+    if (S.cart && S.cart.token) {
+      S.cartTok = S.cart.token;
+      localStorage.setItem('cq_cart', S.cartTok);
+    }
+  } catch(e) {
+    S.cart = null; // 404 = no cart yet, fine
+  }
+  updateBadge();
+}
+
+// ─── PRODUCT CARD HTML ────────────────────────────────────
+function pcard(p) {
+  // p.images[0].src OR nothing
+  var img = (p.images && p.images[0] && p.images[0].src) ? p.images[0].src : null;
+  // price from variants[0].price OR price_min (search)
+  var price = null;
+  if (p.variants && p.variants[0]) price = p.variants[0].price;
+  else if (p.price_min != null)    price = p.price_min;
+  else if (p.price != null)        price = p.price;
+  var comp = null;
+  if (p.variants && p.variants[0]) comp = p.variants[0].compare_at_price;
+
+  return '<div class="pcard" onclick="go(\'product\',{id:' + p.id + '})">'
+    + '<div class="imgw">'
+    + (img ? '<img src="' + img + '" alt="" loading="lazy">' : '<span class="iph">⌚</span>')
+    + '</div>'
+    + '<div class="inf">'
+    + '<div class="pven">' + (p.vendor || '') + '</div>'
+    + '<div class="pname">' + p.title + '</div>'
+    + '<div style="display:flex;align-items:baseline;gap:6px">'
+    + '<span class="pprice">' + (price != null ? money(price) : '—') + '</span>'
+    + (comp && parseFloat(comp) > parseFloat(price) ? '<span class="pcomp">' + money(comp) + '</span>' : '')
+    + '</div>'
+    + '</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HOME PAGE
+//  API: GET /shop        → { data: { shop: {...} } }
+//  API: GET /product-categories → { data: { categories: [] } }
+//  API: GET /products    → { data: { products: [...] }, meta: { pagination: {...} } }
+// ═══════════════════════════════════════════════════════════
+async function pageHome() {
+  spin('v-home');
+  var el = document.getElementById('v-home');
+  try {
+    var results = await Promise.all([
+      req('GET', '/shop'),
+      req('GET', '/product-categories'),
+      req('GET', '/products', null, { per_page: 8 })
+    ]);
+
+    var shop  = results[0].data.shop;
+    var cats  = results[1].data.categories  || [];   // ← EXACT key
+    var prods = results[2].data.products    || [];   // ← EXACT key
+
+    var html = '';
+
+    // HERO
+    html += '<div style="background:linear-gradient(135deg,#0f0f0f 0%,#1a1408 100%);padding:80px 40px;text-align:center;border-bottom:1px solid var(--border)">'
+      + '<div style="font-size:11px;letter-spacing:4px;color:var(--gold);margin-bottom:14px;text-transform:uppercase">Welcome to</div>'
+      + '<h1 style="font-size:48px;font-weight:900;letter-spacing:2px;margin-bottom:14px">' + shop.name + '</h1>'
+      + '<p style="font-size:16px;color:var(--muted);max-width:480px;margin:0 auto 32px">'
+      + (shop.meta_description || 'Premium watch accessories') + '</p>'
+      + '<button class="btn btn-gold" style="font-size:15px;padding:14px 40px" onclick="go(\'products\')">Shop Now</button>'
+      + '</div>';
+
+    // CATEGORIES
+    if (cats.length) {
+      html += '<div class="pw"><div class="sec-title">Categories</div><div class="sec-sub">Browse by type</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px">';
+      for (var i = 0; i < cats.length; i++) {
+        var c = cats[i];
+        html += '<div onclick="go(\'products\',{category:\'' + c.slug + '\'})"'
+          + ' style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s"'
+          + ' onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+          + '<div style="font-size:30px;margin-bottom:10px">⌚</div>'
+          + '<div style="font-size:13px;font-weight:600">' + c.name + '</div>'
+          + (c.products_count != null ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + c.products_count + ' items</div>' : '')
+          + '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // FEATURED PRODUCTS
+    html += '<div class="pw" style="' + (cats.length ? 'padding-top:0' : '') + '">'
+      + '<div class="sec-title">Featured Products</div>'
+      + '<div class="sec-sub">Handpicked for you</div>'
+      + '<div class="pgrid">';
+    if (prods.length) {
+      for (var j = 0; j < prods.length; j++) html += pcard(prods[j]);
+    } else {
+      html += '<p style="color:var(--muted)">No products found</p>';
+    }
+    html += '</div>'
+      + '<div style="text-align:center;margin-top:32px">'
+      + '<button class="btn btn-out" onclick="go(\'products\')">View All Products →</button>'
+      + '</div></div>';
+
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load. Make sure server is running on port 8000.</div>';
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PRODUCTS PAGE
+//  API: GET /products?page=1&per_page=12&category=slug&sort=x
+//       → { data: { products: [...] }, meta: { pagination: { total, last_page } } }
+//  API: GET /product-categories → { data: { categories: [...] } }
+// ═══════════════════════════════════════════════════════════
+var PS = { page: 1, cat: '', sort: '' };
+
+async function pageProducts(params) {
+  if (params && params.category !== undefined) { PS.cat = params.category; PS.page = 1; }
+  if (params && params.page)                     PS.page = params.page;
+
+  spin('v-products');
+  var el = document.getElementById('v-products');
+
+  // build shell
+  el.innerHTML = '<div class="pw"><div style="display:flex;gap:32px;align-items:flex-start">'
+    + '<div id="ps-sb" style="min-width:190px;flex-shrink:0">'
+    + '<div style="font-size:12px;font-weight:800;margin-bottom:14px;letter-spacing:1px;color:var(--muted)">FILTER BY</div>'
+    + '<div id="ps-cats" style="margin-bottom:24px"><div class="spin"></div></div>'
+    + '<div style="font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:1px;color:var(--muted)">SORT BY</div>'
+    + '<select onchange="PS.sort=this.value;PS.page=1;pageProducts({})"'
+    + ' style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;font-size:13px">'
+    + '<option value="">Default</option>'
+    + '<option value="price_asc"'  + (PS.sort==='price_asc'  ?' selected':'') + '>Price: Low → High</option>'
+    + '<option value="price_desc"' + (PS.sort==='price_desc' ?' selected':'') + '>Price: High → Low</option>'
+    + '<option value="newest"'     + (PS.sort==='newest'     ?' selected':'') + '>Newest</option>'
+    + '</select>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div class="sec-title">Products</div>'
+    + '<div id="ps-cnt" style="font-size:13px;color:var(--muted)"></div>'
+    + '</div>'
+    + '<div id="ps-grid"><div class="loading"><div class="spin"></div></div></div>'
+    + '<div id="ps-pgs" class="pages"></div>'
+    + '</div></div></div>';
+
+  // load categories for sidebar
+  req('GET', '/product-categories').then(function(res) {
+    var cats = res.data.categories || [];
+    var html = '';
+    html += '<div onclick="PS.cat=\'\';PS.page=1;pageProducts({})" style="padding:6px 0;font-size:13px;cursor:pointer;color:'
+      + (!PS.cat ? 'var(--gold)' : 'var(--muted)') + '"'
+      + ' onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'' + (!PS.cat ? 'var(--gold)' : 'var(--muted)') + '\'">All Products</div>';
+    for (var i = 0; i < cats.length; i++) {
+      var c = cats[i];
+      var active = PS.cat === c.slug;
+      html += '<div onclick="PS.cat=\'' + c.slug + '\';PS.page=1;pageProducts({})" style="padding:6px 0;font-size:13px;cursor:pointer;color:'
+        + (active ? 'var(--gold)' : 'var(--muted)') + '"'
+        + ' onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'' + (active ? 'var(--gold)' : 'var(--muted)') + '\'">'
+        + c.name + '</div>';
+    }
+    document.getElementById('ps-cats').innerHTML = html;
+  }).catch(function() {});
+
+  // load products
+  try {
+    var qs = { page: PS.page, per_page: 12 };
+    if (PS.cat)  qs.category = PS.cat;
+    if (PS.sort) qs.sort     = PS.sort;
+
+    var res  = await req('GET', '/products', null, qs);
+    var list = res.data.products || [];          // ← EXACT: res.data.products
+    var pag  = (res.meta && res.meta.pagination) || {};
+    var tot  = pag.total    || list.length;
+    var last = pag.last_page || 1;
+
+    document.getElementById('ps-cnt').textContent = tot + ' products';
+
+    if (!list.length) {
+      document.getElementById('ps-grid').innerHTML = '<div class="empty"><div class="ico">🔍</div><h3>No products found</h3><p>Try a different filter</p></div>';
+    } else {
+      var g = '<div class="pgrid">';
+      for (var k = 0; k < list.length; k++) g += pcard(list[k]);
+      g += '</div>';
+      document.getElementById('ps-grid').innerHTML = g;
+    }
+
+    var pgs = '';
+    for (var pg = 1; pg <= last; pg++) {
+      pgs += '<button class="pgbtn ' + (pg === PS.page ? 'on' : '') + '" onclick="PS.page=' + pg + ';pageProducts({})">' + pg + '</button>';
+    }
+    document.getElementById('ps-pgs').innerHTML = pgs;
+  } catch(e) {
+    document.getElementById('ps-grid').innerHTML = '<div class="empty" style="color:var(--danger)">Failed to load products</div>';
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PRODUCT DETAIL
+//  API: GET /products/{id} → { data: { product: {...} } }
+// ═══════════════════════════════════════════════════════════
+var selVarId  = null;
+var selAddonId = null;
+
+async function pageProduct(id) {
+  spin('v-product');
+  var el = document.getElementById('v-product');
+  try {
+    var res = await req('GET', '/products/' + id);
+    var p   = res.data.product;    // ← EXACT: res.data.product
+
+    var imgs = p.images   || [];
+    var vars = p.variants || [];
+    var fv   = vars[0]    || {};
+    selVarId = fv.id || null;
+
+    var mainImg = imgs[0] ? imgs[0].src : null;
+
+    var html = '<div class="pw"><div class="bc">'
+      + '<span onclick="go(\'home\')">Home</span> / '
+      + '<span onclick="go(\'products\')">Products</span> / '
+      + '<span style="color:var(--text)">' + p.title + '</span>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">';
+
+    // LEFT: images
+    html += '<div>'
+      + '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;aspect-ratio:1;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center">'
+      + (mainImg ? '<img id="mi" src="' + mainImg + '" style="width:100%;height:100%;object-fit:cover">' : '<span style="font-size:80px;color:var(--border)">⌚</span>')
+      + '</div>';
+    if (imgs.length > 1) {
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      for (var i = 0; i < imgs.length; i++) {
+        html += '<div onclick="document.getElementById(\'mi\').src=\'' + imgs[i].src + '\'"'
+          + ' style="width:68px;height:68px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;flex-shrink:0"'
+          + ' onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+          + '<img src="' + imgs[i].src + '" style="width:100%;height:100%;object-fit:cover">'
+          + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // RIGHT: info
+    html += '<div>';
+    if (p.vendor) html += '<div style="font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">' + p.vendor + '</div>';
+    html += '<h1 style="font-size:28px;font-weight:900;margin-bottom:14px;line-height:1.2">' + p.title + '</h1>';
+    html += '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:20px">'
+      + '<span id="sp" style="font-size:28px;font-weight:800;color:var(--gold)">' + money(fv.price || p.price) + '</span>';
+    if (fv.compare_at_price && parseFloat(fv.compare_at_price) > parseFloat(fv.price)) {
+      html += '<span style="font-size:16px;color:var(--muted);text-decoration:line-through">' + money(fv.compare_at_price) + '</span>'
+        + '<span class="tag tg">Sale</span>';
+    }
+    html += '</div>';
+
+    if (p.body_html) {
+      var desc = p.body_html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 400);
+      html += '<div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)">'
+        + desc + (p.body_html.length > 400 ? '…' : '') + '</div>';
+    }
+
+    // variants
+    if (vars.length > 1) {
+      html += '<div style="margin-bottom:20px">'
+        + '<div style="font-size:11px;color:var(--muted);font-weight:800;margin-bottom:8px;letter-spacing:.5px">VARIANT</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:8px" id="vbtns">';
+      for (var vi = 0; vi < vars.length; vi++) {
+        var v = vars[vi];
+        html += '<button id="vb' + vi + '" onclick="pickVar(' + vi + ',' + v.id + ',\'' + v.price + '\',\'' + (v.compare_at_price||'') + '\')"'
+          + ' style="padding:8px 16px;border-radius:6px;border:1px solid ' + (vi===0?'var(--gold)':'var(--border)') + ';'
+          + 'background:' + (vi===0?'rgba(201,169,110,.15)':'none') + ';color:var(--text);font-size:13px;cursor:pointer;transition:all .2s">'
+          + v.title + '</button>';
+      }
+      html += '</div></div>';
+    }
+
+    // addons
+    var addons = (p.addons || []).filter(function(a){ return a.is_active; });
+    selAddonId = null;
+    if (addons.length) {
+      html += '<div style="margin-bottom:20px">'
+        + '<div style="font-size:11px;color:var(--muted);font-weight:800;margin-bottom:10px;letter-spacing:.5px">ADD-ONS <span style="font-weight:400;text-transform:none">(optional)</span></div>'
+        + '<div style="display:flex;flex-direction:column;gap:8px" id="addon-list">';
+      for (var ai = 0; ai < addons.length; ai++) {
+        var ad = addons[ai];
+        var avail = ad.available;
+        html += '<label id="adlb' + ai + '" style="display:flex;align-items:center;gap:12px;padding:12px 14px;'
+          + 'border:1px solid var(--border);border-radius:8px;cursor:' + (avail?'pointer':'not-allowed') + ';'
+          + 'opacity:' + (avail?'1':'0.4') + ';transition:border-color .2s">'
+          + '<input type="checkbox" id="adchk' + ai + '" value="' + ad.id + '"'
+          + (avail ? '' : ' disabled')
+          + ' onchange="pickAddon(' + ai + ',' + ad.id + ',this.checked,' + ad.price + ')"'
+          + ' style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex-shrink:0">'
+          + '<span style="flex:1;font-size:13px;font-weight:600">' + ad.name + '</span>'
+          + '<span style="font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap">+ ' + money(ad.price) + '</span>'
+          + (!avail ? '<span style="font-size:11px;color:var(--danger)">Out of stock</span>' : '')
+          + '</label>';
+      }
+      html += '</div></div>';
+    }
+
+    // qty + add
+    html += '<div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">'
+      + '<div style="display:flex;align-items:center;border:1px solid var(--border);border-radius:7px;overflow:hidden">'
+      + '<button onclick="adjQ(-1)" style="width:40px;height:44px;background:none;border:none;color:var(--text);font-size:18px">−</button>'
+      + '<input id="qty" type="number" value="1" min="1" style="width:50px;height:44px;background:none;border:none;color:var(--text);text-align:center;font-size:15px;outline:none">'
+      + '<button onclick="adjQ(1)"  style="width:40px;height:44px;background:none;border:none;color:var(--text);font-size:18px">+</button>'
+      + '</div>'
+      + '<button id="atcbtn" class="btn btn-gold" style="flex:1;height:44px;font-size:15px" onclick="doAddCart()">Add to Cart 🛒</button>'
+      + '</div>';
+
+    if (fv.inventory_quantity != null) {
+      html += '<div style="font-size:12px;color:' + (fv.inventory_quantity > 0 ? 'var(--success)' : 'var(--danger)') + '">'
+        + (fv.inventory_quantity > 0 ? '✓ In stock (' + fv.inventory_quantity + ')' : '✕ Out of stock')
+        + '</div>';
+    }
+
+    html += '</div></div></div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Product not found</div>';
+    console.error(e);
+  }
+}
+
+function pickVar(idx, vid, price, comp) {
+  selVarId = vid;
+  document.querySelectorAll('[id^="vb"]').forEach(function(b, i) {
+    b.style.borderColor = i === idx ? 'var(--gold)' : 'var(--border)';
+    b.style.background  = i === idx ? 'rgba(201,169,110,.15)' : 'none';
+  });
+  var sp = document.getElementById('sp');
+  if (sp) sp.textContent = money(price);
+}
+
+function adjQ(d) {
+  var i = document.getElementById('qty');
+  i.value = Math.max(1, parseInt(i.value || 1) + d);
+}
+
+function pickAddon(idx, addonId, checked, addonPrice) {
+  // uncheck all others — only one addon at a time
+  document.querySelectorAll('[id^="adchk"]').forEach(function(chk, i) {
+    if (i !== idx) { chk.checked = false; }
+    var lbl = document.getElementById('adlb' + i);
+    if (lbl) lbl.style.borderColor = (i === idx && checked) ? 'var(--gold)' : 'var(--border)';
+  });
+  selAddonId = checked ? addonId : null;
+}
+
+async function doAddCart() {
+  var btn = document.getElementById('atcbtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    var item = { variant_id: selVarId, quantity: parseInt(document.getElementById('qty').value || 1) };
+    if (selAddonId) item.addon_id = selAddonId;
+    var res = await req('POST', '/cart/add', { items: [item] });
+    // save cart token
+    var tok = res.cart_token || (res.data && res.data.token);
+    if (tok) { S.cartTok = tok; localStorage.setItem('cq_cart', tok); }
+    S.cart = res.data;
+    updateBadge();
+    toast('Added to cart!');
+  } catch(e) {
+    toast((e && e.message) || 'Failed to add', 'err');
+    console.error(e);
+  }
+  btn.disabled = false; btn.innerHTML = 'Add to Cart 🛒';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  COLLECTIONS
+//  API: GET /collections → { data: { collections: [...] }, meta: {...} }
+//  API: GET /collections/{id} → { data: { collection: {...} } }
+//  API: GET /collections/{id}/products → { data: { products: [...] } }
+// ═══════════════════════════════════════════════════════════
+async function pageCollections() {
+  spin('v-collections');
+  var el = document.getElementById('v-collections');
+  try {
+    var res  = await req('GET', '/collections');
+    var list = res.data.collections || [];   // ← EXACT
+
+    if (!list.length) {
+      el.innerHTML = '<div class="pw"><div class="sec-title">Collections</div><div class="empty"><div class="ico">📦</div><h3>No collections yet</h3></div></div>';
+      return;
+    }
+    var html = '<div class="pw"><div class="sec-title">Collections</div><div class="sec-sub">Curated picks</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">';
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      html += '<div onclick="go(\'collection\',{id:' + c.id + '})"'
+        + ' style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s"'
+        + ' onmouseover="this.style.borderColor=\'var(--gold)\';this.style.transform=\'translateY(-2px)\'"'
+        + ' onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'\'">'
+        + '<div style="aspect-ratio:16/9;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--border)">🗂</div>'
+        + '<div style="padding:18px">'
+        + '<div style="font-size:16px;font-weight:700;margin-bottom:6px">' + c.title + '</div>'
+        + '<div style="font-size:13px;color:var(--muted)">' + (c.description||'').replace(/<[^>]+>/g,'').substring(0,80) + '</div>'
+        + '<div style="font-size:12px;color:var(--gold);margin-top:10px">' + c.products_count + ' products</div>'
+        + '</div></div>';
+    }
+    html += '</div></div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load</div>';
+    console.error(e);
+  }
+}
+
+async function pageCollection(id) {
+  spin('v-collection');
+  var el = document.getElementById('v-collection');
+  try {
+    var r1  = await req('GET', '/collections/' + id);
+    var r2  = await req('GET', '/collections/' + id + '/products');
+    var col   = r1.data.collection;   // ← EXACT
+    var prods = r2.data.products || [];  // ← EXACT
+
+    var html = '<div class="pw"><div class="bc"><span onclick="go(\'collections\')">← Collections</span></div>'
+      + '<div class="sec-title">' + col.title + '</div>'
+      + '<div class="sec-sub">' + (col.description||'').replace(/<[^>]+>/g,'') + '</div>';
+    if (!prods.length) {
+      html += '<div class="empty"><div class="ico">📦</div><h3>No products</h3></div>';
+    } else {
+      html += '<div class="pgrid">';
+      for (var i = 0; i < prods.length; i++) html += pcard(prods[i]);
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load</div>';
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CART
+//  API: GET /cart → { data: { token, items:[{id,variant_id,title,variant_title,image,price,quantity,total_price}], item_count, total_price, total_discount } }
+//  API: POST /cart/update → { updates: { [line_item_id]: qty } }
+//  API: POST /cart/remove → { line_item_id: id }
+//  API: POST /cart/apply-discount → { discount_code: code }
+//  API: POST /cart/clear → {}
+// ═══════════════════════════════════════════════════════════
+async function pageCart() {
+  spin('v-cart');
+  var el = document.getElementById('v-cart');
+  try {
+    await fetchCart();
+    var cart  = S.cart;
+    var items = (cart && cart.items) ? cart.items : [];
+
+    if (!items.length) {
+      el.innerHTML = '<div class="pw" style="max-width:700px">'
+        + '<div class="sec-title">Your Cart</div>'
+        + '<div class="empty" style="margin-top:40px"><div class="ico">🛒</div><h3>Cart is empty</h3>'
+        + '<p>Add products to get started</p>'
+        + '<button class="btn btn-gold" style="margin-top:20px" onclick="go(\'products\')">Shop Now</button>'
+        + '</div></div>';
+      return;
+    }
+
+    var total    = cart.total_price    || 0;
+    var discount = cart.total_discount || 0;
+
+    var html = '<div class="pw"><div class="sec-title" style="margin-bottom:28px">Your Cart</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 350px;gap:32px;align-items:start">'
+      + '<div id="citems">';
+
+    for (var i = 0; i < items.length; i++) {
+      var it  = items[i];
+      var vt  = (it.variant_title && it.variant_title !== 'Default Title') ? it.variant_title : '';
+      html += '<div style="display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);align-items:center">'
+        + '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:var(--card);flex-shrink:0;display:flex;align-items:center;justify-content:center">'
+        + (it.image ? '<img src="' + it.image + '" style="width:100%;height:100%;object-fit:cover">'
+                    : '<span style="font-size:28px;color:var(--border)">⌚</span>')
+        + '</div>'
+        + '<div style="flex:1">'
+        + '<div style="font-size:14px;font-weight:600;margin-bottom:4px">' + it.title + '</div>'
+        + (vt ? '<div style="font-size:12px;color:var(--muted)">' + vt + '</div>' : '')
+        + '<div style="font-size:15px;font-weight:700;color:var(--gold);margin-top:6px">' + money(it.price) + '</div>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:6px">'
+        + '<button onclick="cartUpd(' + it.id + ',' + (it.quantity - 1) + ')" style="width:30px;height:30px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text);font-size:16px">−</button>'
+        + '<span style="min-width:24px;text-align:center;font-size:14px">' + it.quantity + '</span>'
+        + '<button onclick="cartUpd(' + it.id + ',' + (it.quantity + 1) + ')" style="width:30px;height:30px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text);font-size:16px">+</button>'
+        + '</div>'
+        + '<div style="font-size:15px;font-weight:700;min-width:72px;text-align:right">' + money(it.total_price) + '</div>'
+        + '<button onclick="cartRem(' + it.id + ')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;margin-left:8px;padding:4px"'
+        + ' onmouseover="this.style.color=\'var(--danger)\'" onmouseout="this.style.color=\'var(--muted)\'">✕</button>'
+        + '</div>';
+    }
+
+    html += '</div>'
+      // SUMMARY PANEL
+      + '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;position:sticky;top:80px">'
+      + '<div style="font-size:16px;font-weight:700;margin-bottom:20px">Order Summary</div>'
+      + (discount > 0
+          ? '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;color:var(--success)"><span>Discount</span><span>−' + money(discount) + '</span></div>'
+          : '')
+      + '<div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;margin-bottom:20px"><span>Total</span><span style="color:var(--gold)">' + money(total) + '</span></div>'
+      + '<div style="margin-bottom:16px">'
+      + '<div style="font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.4px;margin-bottom:6px">DISCOUNT CODE</div>'
+      + '<div style="display:flex;gap:8px">'
+      + '<input id="disc-in" placeholder="Enter code" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px">'
+      + '<button class="btn btn-out" style="padding:8px 12px;font-size:13px" onclick="doDiscount()">Apply</button>'
+      + '</div>'
+      + '<div id="disc-msg" style="font-size:12px;margin-top:5px"></div>'
+      + '</div>'
+      + '<button class="btn btn-gold" style="width:100%;padding:13px;font-size:15px" onclick="go(\'checkout\')">Checkout →</button>'
+      + '<button class="btn btn-out" style="width:100%;margin-top:10px;font-size:13px" onclick="go(\'products\')">← Continue Shopping</button>'
+      + '<button style="width:100%;margin-top:10px;background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:6px" onclick="cartClear()">Clear Cart</button>'
+      + '</div>'
+      + '</div></div>';
+
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load cart</div>';
+    console.error(e);
+  }
+}
+
+async function cartUpd(lineId, qty) {
+  if (qty < 1) { cartRem(lineId); return; }
+  try {
+    var body = { updates: {} };
+    body.updates[lineId] = qty;
+    var res = await req('POST', '/cart/update', body);
+    S.cart = res.data;
+    updateBadge();
+    pageCart();
+  } catch(e) { toast((e && e.message) || 'Failed', 'err'); }
+}
+
+async function cartRem(lineId) {
+  try {
+    // EXACT: { line_item_id: id }
+    var res = await req('POST', '/cart/remove', { line_item_id: lineId });
+    S.cart = res.data;
+    updateBadge();
+    pageCart();
+    toast('Item removed');
+  } catch(e) { toast('Failed', 'err'); }
+}
+
+async function cartClear() {
+  if (!confirm('Clear entire cart?')) return;
+  try {
+    await req('POST', '/cart/clear');
+    S.cart = null;
+    updateBadge();
+    pageCart();
+    toast('Cart cleared');
+  } catch(e) { toast('Failed', 'err'); }
+}
+
+async function doDiscount() {
+  var code  = document.getElementById('disc-in').value.trim();
+  var msgEl = document.getElementById('disc-msg');
+  if (!code) return;
+  try {
+    // EXACT: { discount_code: code }
+    await req('POST', '/cart/apply-discount', { discount_code: code });
+    msgEl.style.color = 'var(--success)';
+    msgEl.textContent = '✓ Discount applied!';
+    toast('Discount applied!');
+  } catch(e) {
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '✕ ' + ((e && e.error) || (e && e.message) || 'Invalid code');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHECKOUT
+//  API: GET /cart/shipping-rates?country_code=PK
+//       → { data: { shipping_rates: [{id, name, price, zone_name}] } }
+//  API: POST /orders → { email, shipping_address:{...}, shipping_method_id, payment_method, note }
+// ═══════════════════════════════════════════════════════════
+async function pageCheckout() {
+  spin('v-checkout');
+  var el = document.getElementById('v-checkout');
+
+  if (!S.cart || !S.cart.items || !S.cart.items.length) { go('cart'); return; }
+
+  var rates = [];
+  try {
+    var sr = await req('GET', '/cart/shipping-rates', null, { country_code: 'PK' });
+    rates  = sr.data.shipping_rates || [];   // ← EXACT
+  } catch(e) {}
+
+  var u     = S.user || {};
+  var items = S.cart.items;
+  var total = S.cart.total_price || 0;
+
+  var html = '<div class="pw" style="max-width:860px">'
+    + '<div class="bc"><span onclick="go(\'cart\')">← Back to Cart</span></div>'
+    + '<div class="sec-title" style="margin-bottom:28px">Checkout</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 310px;gap:32px;align-items:start"><div>';
+
+  html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Contact</div>'
+    + '<div class="fld"><label>Email</label><input id="co-em" type="email" value="' + (u.email||'') + '" placeholder="your@email.com"></div>'
+    + '</div>';
+
+  html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Shipping Address</div>'
+    + '<div class="g2">'
+    + '<div class="fld"><label>First Name</label><input id="co-fn" value="' + (u.first_name||'') + '"></div>'
+    + '<div class="fld"><label>Last Name</label><input id="co-ln" value="' + (u.last_name||'') + '"></div>'
+    + '</div>'
+    + '<div class="fld"><label>Address</label><input id="co-a1" placeholder="Street address"></div>'
+    + '<div class="fld"><label>Apt / Suite</label><input id="co-a2"></div>'
+    + '<div class="g3">'
+    + '<div class="fld"><label>City</label><input id="co-ct"></div>'
+    + '<div class="fld"><label>Province</label><input id="co-pv"></div>'
+    + '<div class="fld"><label>ZIP</label><input id="co-zp"></div>'
+    + '</div>'
+    + '<div class="g2">'
+    + '<div class="fld"><label>Country</label><select id="co-cy"><option value="PK">PK — Pakistan</option><option value="AE">AE — UAE</option><option value="US">US — United States</option><option value="GB">GB — UK</option><option value="SA">SA — Saudi Arabia</option></select></div>'
+    + '<div class="fld"><label>Phone</label><input id="co-ph" value="' + (u.phone||'') + '"></div>'
+    + '</div>'
+    + '</div>';
+
+  if (rates.length) {
+    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">'
+      + '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Shipping Method</div>';
+    for (var i = 0; i < rates.length; i++) {
+      var r = rates[i];
+      html += '<label style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px;transition:border-color .2s"'
+        + ' onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+        + '<input type="radio" name="sm" value="' + r.id + '" ' + (i===0?'checked':'') + ' style="accent-color:var(--gold)">'
+        + '<span style="flex:1">' + r.name + '</span>'
+        + '<span style="color:var(--gold);font-weight:700">' + (r.price==0?'Free':money(r.price)) + '</span>'
+        + '</label>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Payment</div>'
+    + '<label style="display:flex;align-items:center;gap:12px;cursor:pointer">'
+    + '<input type="radio" name="pm" value="cod" checked style="accent-color:var(--gold)"><span>Cash on Delivery (COD)</span>'
+    + '</label></div>';
+
+  html += '<div class="fld"><label>Order Note (optional)</label><textarea id="co-nt" placeholder="Special instructions…"></textarea></div>'
+    + '<button id="plbtn" class="btn btn-gold" style="width:100%;font-size:15px;padding:14px" onclick="placeOrder()">Place Order</button>'
+    + '<div id="co-err" style="color:var(--danger);font-size:13px;margin-top:10px;text-align:center"></div>'
+    + '</div>';
+
+  // summary
+  html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:sticky;top:80px">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:16px">Order Summary</div>';
+  for (var j = 0; j < items.length; j++) {
+    var it = items[j];
+    html += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">'
+      + '<div style="width:48px;height:48px;border-radius:6px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">'
+      + (it.image ? '<img src="' + it.image + '" style="width:100%;height:100%;object-fit:cover">' : '<span style="font-size:18px">⌚</span>')
+      + '</div><div style="flex:1;font-size:12px;line-height:1.4">' + it.title + '</div>'
+      + '<div style="font-size:13px;font-weight:700">' + money(it.total_price) + '</div></div>';
+  }
+  html += '<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;font-size:16px;font-weight:700">'
+    + '<span>Total</span><span style="color:var(--gold)">' + money(total) + '</span></div>'
+    + '</div></div></div>';
+
+  el.innerHTML = html;
+}
+
+async function placeOrder() {
+  var btn   = document.getElementById('plbtn');
+  var errEl = document.getElementById('co-err');
+  errEl.textContent = '';
+  btn.disabled = true; btn.textContent = 'Placing Order…';
+  var sm  = document.querySelector('input[name="sm"]:checked');
+  var pm  = document.querySelector('input[name="pm"]:checked');
+  try {
+    var res = await req('POST', '/orders', {
+      email: document.getElementById('co-em').value,
+      shipping_address: {
+        first_name:   document.getElementById('co-fn').value,
+        last_name:    document.getElementById('co-ln').value,
+        address1:     document.getElementById('co-a1').value,
+        address2:     document.getElementById('co-a2').value,
+        city:         document.getElementById('co-ct').value,
+        province:     document.getElementById('co-pv').value,
+        zip:          document.getElementById('co-zp').value,
+        country_code: document.getElementById('co-cy').value,
+        phone:        document.getElementById('co-ph').value,
+      },
+      shipping_method_id: sm ? parseInt(sm.value) : null,
+      payment_method:     pm ? pm.value : 'cod',
+      note:               document.getElementById('co-nt').value,
+    });
+    var order = (res.data && res.data.order) ? res.data.order : (res.data || {});
+    S.cart = null; updateBadge();
+    showSuccess(order);
+  } catch(e) {
+    var errs = e && e.errors;
+    errEl.textContent = errs ? Object.values(errs)[0][0] : ((e && e.message) || 'Failed to place order');
+    btn.disabled = false; btn.textContent = 'Place Order';
+    console.error(e);
+  }
+}
+
+function showSuccess(order) {
+  go('success');
+  var el  = document.getElementById('v-success');
+  var num = order.order_number || order.name || order.id || '—';
+  var tot = order.total_price  || order.total || 0;
+  var its = order.line_items   || order.items || [];
+  var html = '<div class="pw" style="max-width:580px;text-align:center">'
+    + '<div style="font-size:64px;margin-bottom:20px">🎉</div>'
+    + '<h1 style="font-size:28px;font-weight:900;margin-bottom:10px">Order Placed!</h1>'
+    + '<p style="color:var(--muted);font-size:15px;margin-bottom:32px">Order <strong style="color:var(--gold)">#' + num + '</strong> received.</p>'
+    + '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:left;margin-bottom:28px">'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">'
+    + '<span style="color:var(--muted)">Order Number</span><strong style="color:var(--gold)">#' + num + '</strong></div>';
+  for (var i = 0; i < its.length; i++) {
+    var it = its[i];
+    html += '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px">'
+      + '<span>' + (it.title||'Product') + ' × ' + (it.quantity||1) + '</span>'
+      + '<span>' + money((it.price||0) * (it.quantity||1)) + '</span></div>';
+  }
+  html += '<div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">'
+    + '<span>Total</span><span style="color:var(--gold)">' + money(tot) + '</span></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:12px;justify-content:center">'
+    + (S.user ? '<button class="btn btn-out" onclick="go(\'account\')">View Orders</button>' : '')
+    + '<button class="btn btn-gold" onclick="go(\'products\')">Continue Shopping</button>'
+    + '</div></div>';
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACCOUNT
+//  API: GET /customers/me/orders → { data: [...], meta: { pagination: {...} } }
+//  API: GET /customers/me/addresses → { data: [...] }
+//  API: PUT /customers/me → update profile
+//  API: PUT /auth/change-password
+// ═══════════════════════════════════════════════════════════
+async function pageAccount() {
+  spin('v-account');
+  var el = document.getElementById('v-account');
+  if (!S.token) {
+    el.innerHTML = '<div class="pw" style="max-width:500px;text-align:center">'
+      + '<div style="font-size:48px;margin-bottom:16px">🔒</div>'
+      + '<h2 style="margin-bottom:10px">Login Required</h2>'
+      + '<p style="color:var(--muted);margin-bottom:24px">Please login to view your account</p>'
+      + '<button class="btn btn-gold" onclick="openModal()">Login / Register</button>'
+      + '</div>';
+    return;
+  }
+  var u = S.user || {};
+  el.innerHTML = '<div class="pw">'
+    + '<div style="display:flex;align-items:center;gap:16px;margin-bottom:32px">'
+    + '<div style="width:56px;height:56px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#000">'
+    + (u.first_name||'U')[0].toUpperCase() + '</div>'
+    + '<div><div style="font-size:20px;font-weight:800">' + (u.first_name||'') + ' ' + (u.last_name||'') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted)">' + (u.email||'') + '</div></div>'
+    + '</div>'
+    + '<div class="tabs">'
+    + '<button class="tbtn on" onclick="accTab(\'orders\',this)">My Orders</button>'
+    + '<button class="tbtn"    onclick="accTab(\'profile\',this)">Profile</button>'
+    + '<button class="tbtn"    onclick="accTab(\'addresses\',this)">Addresses</button>'
+    + '<button class="tbtn"    onclick="accTab(\'password\',this)">Password</button>'
+    + '</div>'
+
+    + '<div id="at-orders" class="tpanel on"><div class="loading"><div class="spin"></div></div></div>'
+
+    + '<div id="at-profile" class="tpanel"><div style="max-width:480px">'
+    + '<div class="g2">'
+    + '<div class="fld"><label>First Name</label><input id="pf-fn" value="' + (u.first_name||'') + '"></div>'
+    + '<div class="fld"><label>Last Name</label><input id="pf-ln" value="' + (u.last_name||'') + '"></div>'
+    + '</div>'
+    + '<div class="fld"><label>Email (cannot change)</label><input value="' + (u.email||'') + '" disabled style="opacity:.5"></div>'
+    + '<div class="fld"><label>Phone</label><input id="pf-ph" value="' + (u.phone||'') + '"></div>'
+    + '<button class="btn btn-gold" onclick="saveProfile()">Save Changes</button>'
+    + '</div></div>'
+
+    + '<div id="at-addresses" class="tpanel">'
+    + '<div id="addr-list"><div class="loading"><div class="spin"></div></div></div>'
+    + '<div style="margin-top:28px;padding-top:28px;border-top:1px solid var(--border)">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Add New Address</div>'
+    + '<div style="max-width:480px">'
+    + '<div class="g2"><div class="fld"><label>First Name</label><input id="na-fn"></div><div class="fld"><label>Last Name</label><input id="na-ln"></div></div>'
+    + '<div class="fld"><label>Address</label><input id="na-a1"></div>'
+    + '<div class="g3"><div class="fld"><label>City</label><input id="na-ct"></div><div class="fld"><label>Province</label><input id="na-pv"></div><div class="fld"><label>ZIP</label><input id="na-zp"></div></div>'
+    + '<div class="g2"><div class="fld"><label>Country</label><select id="na-cy"><option value="PK">PK</option><option value="AE">AE</option><option value="US">US</option><option value="GB">GB</option></select></div><div class="fld"><label>Phone</label><input id="na-ph"></div></div>'
+    + '<button class="btn btn-gold" onclick="addAddr()">Add Address</button>'
+    + '</div></div></div>'
+
+    + '<div id="at-password" class="tpanel"><div style="max-width:400px">'
+    + '<div class="fld"><label>Current Password</label><input id="pw-c" type="password"></div>'
+    + '<div class="fld"><label>New Password</label><input id="pw-n" type="password"></div>'
+    + '<div class="fld"><label>Confirm New</label><input id="pw-cf" type="password"></div>'
+    + '<button class="btn btn-gold" onclick="changePw()">Update Password</button>'
+    + '<div id="pw-msg" style="font-size:13px;margin-top:10px"></div>'
+    + '</div></div>'
+    + '</div>';
+
+  loadOrders();
+  loadAddrs();
+}
+
+function accTab(name, btn) {
+  document.querySelectorAll('#v-account .tbtn').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('#v-account .tpanel').forEach(function(p){ p.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('at-' + name).classList.add('on');
+}
+
+async function loadOrders() {
+  var el = document.getElementById('at-orders');
+  try {
+    var res = await req('GET', '/customers/me/orders');
+    // EXACT: { data: [...], meta: { pagination: {...} } }
+    var list = Array.isArray(res.data) ? res.data : [];
+    if (!list.length) {
+      el.innerHTML = '<div class="empty"><div class="ico">📦</div><h3>No orders yet</h3></div>';
+      return;
+    }
+    var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+    for (var i = 0; i < list.length; i++) {
+      var o   = list[i];
+      var cls = (o.financial_status === 'paid' || o.fulfillment_status === 'fulfilled') ? 'tgreen' : 'tg';
+      html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
+        + '<div style="flex:1;min-width:150px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Order</div>'
+        + '<div style="font-size:16px;font-weight:800;color:var(--gold)">' + (o.name || ('#'+o.order_number)) + '</div></div>'
+        + '<div style="flex:1;min-width:110px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date</div>'
+        + '<div style="font-size:13px">' + (o.created_at ? new Date(o.created_at).toLocaleDateString() : '—') + '</div></div>'
+        + '<div style="flex:1;min-width:90px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Total</div>'
+        + '<div style="font-size:15px;font-weight:700">' + money(o.total_price) + '</div></div>'
+        + '<div><span class="tag ' + cls + '">' + (o.financial_status || o.fulfillment_status || 'pending') + '</span></div>'
+        + (o.financial_status !== 'paid' && o.fulfillment_status !== 'cancelled'
+            ? '<button class="btn btn-out" style="font-size:12px;padding:5px 12px" onclick="cancelOrd(' + o.id + ')">Cancel</button>' : '')
+        + '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="empty" style="color:var(--danger)">Failed to load orders</div>';
+    console.error(e);
+  }
+}
+
+async function cancelOrd(id) {
+  if (!confirm('Cancel this order?')) return;
+  try { await req('POST', '/orders/' + id + '/cancel'); toast('Cancelled'); loadOrders(); }
+  catch(e) { toast((e && e.message) || 'Cannot cancel', 'err'); }
+}
+
+async function loadAddrs() {
+  var el = document.getElementById('addr-list');
+  try {
+    var res  = await req('GET', '/customers/me/addresses');
+    // EXACT: { data: [...] }
+    var list = Array.isArray(res.data) ? res.data : [];
+    if (!list.length) { el.innerHTML = '<p style="color:var(--muted)">No addresses yet.</p>'; return; }
+    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">';
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      html += '<div style="background:var(--card);border:1px solid ' + (a.is_default?'var(--gold)':'var(--border)') + ';border-radius:10px;padding:18px;position:relative">'
+        + (a.is_default ? '<span class="tag tg" style="position:absolute;top:12px;right:12px;font-size:10px">Default</span>' : '')
+        + '<div style="font-size:14px;font-weight:700;margin-bottom:8px">' + (a.first_name||'') + ' ' + (a.last_name||'') + '</div>'
+        + '<div style="font-size:13px;color:var(--muted);line-height:1.6">' + (a.address1||'') + '<br>' + (a.city||'') + ', ' + (a.province||'') + ' ' + (a.zip||'') + '<br>' + (a.country_code||a.country||'') + '</div>'
+        + '<div style="display:flex;gap:8px;margin-top:14px">'
+        + (!a.is_default ? '<button class="btn btn-out" style="font-size:11px;padding:5px 12px" onclick="setDef(' + a.id + ')">Set Default</button>' : '')
+        + '<button style="background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer" onclick="delAddr(' + a.id + ')">Delete</button>'
+        + '</div></div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--danger)">Failed to load</p>'; }
+}
+
+async function addAddr() {
+  try {
+    await req('POST', '/customers/me/addresses', {
+      first_name:   document.getElementById('na-fn').value,
+      last_name:    document.getElementById('na-ln').value,
+      address1:     document.getElementById('na-a1').value,
+      city:         document.getElementById('na-ct').value,
+      province:     document.getElementById('na-pv').value,
+      zip:          document.getElementById('na-zp').value,
+      country_code: document.getElementById('na-cy').value,
+      phone:        document.getElementById('na-ph').value,
+    });
+    toast('Address added!'); loadAddrs();
+  } catch(e) { toast((e && e.message) || 'Failed', 'err'); }
+}
+
+async function setDef(id) {
+  try { await req('PUT', '/customers/me/addresses/' + id + '/default'); loadAddrs(); toast('Default set'); }
+  catch(e) { toast('Failed', 'err'); }
+}
+
+async function delAddr(id) {
+  if (!confirm('Delete this address?')) return;
+  try { await req('DELETE', '/customers/me/addresses/' + id); loadAddrs(); toast('Deleted'); }
+  catch(e) { toast('Failed', 'err'); }
+}
+
+async function saveProfile() {
+  try {
+    var res = await req('PUT', '/customers/me', {
+      first_name: document.getElementById('pf-fn').value,
+      last_name:  document.getElementById('pf-ln').value,
+      phone:      document.getElementById('pf-ph').value,
+    });
+    if (res.data && res.data.customer) S.user = res.data.customer;
+    toast('Profile updated!'); renderAuthUI();
+  } catch(e) { toast((e && e.message) || 'Failed', 'err'); }
+}
+
+async function changePw() {
+  var msg = document.getElementById('pw-msg');
+  try {
+    await req('PUT', '/auth/change-password', {
+      current_password:      document.getElementById('pw-c').value,
+      password:              document.getElementById('pw-n').value,
+      password_confirmation: document.getElementById('pw-cf').value,
+    });
+    msg.style.color = 'var(--success)'; msg.textContent = '✓ Password updated';
+    ['pw-c','pw-n','pw-cf'].forEach(function(id){ document.getElementById(id).value=''; });
+  } catch(e) {
+    msg.style.color = 'var(--danger)'; msg.textContent = '✕ ' + ((e && e.message) || 'Failed');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BLOGS
+//  API: GET /blogs → { data: { blogs: [...] } }
+//  API: GET /blogs/{slug} → { data: { blog: {...} } }
+//  API: GET /blogs/{slug}/articles → { data: { articles: [...] } }
+// ═══════════════════════════════════════════════════════════
+async function pageBlogs() {
+  spin('v-blogs');
+  var el = document.getElementById('v-blogs');
+  try {
+    var res  = await req('GET', '/blogs');
+    var list = res.data.blogs || [];   // ← EXACT
+    var html = '<div class="pw"><div class="sec-title">Blog</div><div class="sec-sub">Stories, guides & watch culture</div>';
+    if (!list.length) {
+      html += '<div class="empty"><div class="ico">📝</div><h3>No blogs yet</h3></div>';
+    } else {
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px">';
+      for (var i = 0; i < list.length; i++) {
+        var b = list[i];
+        html += '<div onclick="go(\'blog\',{handle:\'' + b.slug + '\'})"'
+          + ' style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:all .2s"'
+          + ' onmouseover="this.style.borderColor=\'var(--gold)\';this.style.transform=\'translateY(-2px)\'"'
+          + ' onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'\'">'
+          + '<div style="font-size:28px;margin-bottom:14px">📖</div>'
+          + '<div style="font-size:18px;font-weight:700;margin-bottom:8px">' + b.title + '</div>'
+          + '<div style="font-size:13px;color:var(--gold)">' + (b.articles_count||0) + ' articles</div>'
+          + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load</div>';
+  }
+}
+
+async function pageBlog(handle) {
+  spin('v-blog');
+  var el = document.getElementById('v-blog');
+  try {
+    var r1   = await req('GET', '/blogs/' + handle);
+    var r2   = await req('GET', '/blogs/' + handle + '/articles');
+    var blog = r1.data.blog;          // ← EXACT
+    var arts = r2.data.articles || []; // ← EXACT
+
+    var html = '<div class="pw"><div class="bc"><span onclick="go(\'blogs\')">← Blog</span></div>'
+      + '<div class="sec-title">' + blog.title + '</div>'
+      + '<div class="sec-sub">' + arts.length + ' articles</div>';
+
+    if (!arts.length) {
+      html += '<div class="empty"><div class="ico">📝</div><h3>No articles yet</h3></div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:16px">';
+      for (var i = 0; i < arts.length; i++) {
+        var a   = arts[i];
+        var exc = (a.summary_html || a.body_html || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0, 200);
+        html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px">'
+          + '<div style="font-size:17px;font-weight:700;margin-bottom:8px">' + a.title + '</div>'
+          + '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">' + exc + '…</div>'
+          + '<div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">'
+          + (a.author ? '<span>By ' + a.author + '</span>' : '')
+          + (a.published_at ? '<span>' + new Date(a.published_at).toLocaleDateString() + '</span>' : '')
+          + '</div></div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Failed to load</div>';
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SEARCH
+//  API: GET /search?q=... → { data: { results: [{type,id,title,slug,price_min,image}] } }
+// ═══════════════════════════════════════════════════════════
+async function pageSearch(q) {
+  spin('v-search');
+  var el = document.getElementById('v-search');
+  try {
+    var res   = await req('GET', '/search', null, { q: q });
+    var all   = res.data.results || [];   // ← EXACT
+    var prods = all.filter(function(r){ return r.type === 'product'; });
+
+    var html = '<div class="pw"><div class="bc"><span onclick="go(\'home\')">Home</span> / Search: "' + q + '"</div>'
+      + '<div class="sec-title">Search Results</div>'
+      + '<div class="sec-sub">' + prods.length + ' results for "' + q + '"</div>';
+
+    if (!prods.length) {
+      html += '<div class="empty"><div class="ico">🔍</div><h3>No results found</h3></div>';
+    } else {
+      html += '<div class="pgrid">';
+      for (var i = 0; i < prods.length; i++) {
+        var p = prods[i];
+        html += '<div class="pcard" onclick="go(\'product\',{id:' + p.id + '})">'
+          + '<div class="imgw"><span class="iph">⌚</span></div>'
+          + '<div class="inf"><div class="pname">' + p.title + '</div>'
+          + '<div class="pprice">' + (p.price_min ? money(p.price_min) : '—') + '</div></div>'
+          + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="loading" style="color:var(--danger)">Search failed</div>';
+  }
+}
+
+// ─── BOOT ────────────────────────────────────────────────
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+(async function() {
+  if (S.token) { await fetchMe(); renderAuthUI(); }
+  await fetchCart();
+  go('home');
+})();
+</script>
+</body>
+</html>

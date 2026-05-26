@@ -10,6 +10,9 @@ Route::prefix('v1')
         // Health
         Route::get('/health', fn () => response()->json(['success' => true, 'message' => 'OK']))->name('health');
 
+        // Home page (all sections in one call)
+        Route::get('home', [\App\Http\Controllers\Api\V1\HomePageController::class, 'show'])->name('home');
+
         // Shop info
         Route::get('shop', [\App\Http\Controllers\Api\V1\ShopController::class, 'show'])->name('shop');
 
@@ -47,7 +50,9 @@ Route::prefix('v1')
 
         // Products (before /{product} to avoid route conflicts)
         Route::get('products/count',             [\App\Http\Controllers\Api\V1\ProductController::class, 'count'])->name('products.count');
+        Route::get('products/price-range',       [\App\Http\Controllers\Api\V1\ProductController::class, 'priceRange'])->name('products.price-range');
         Route::get('products/handle/{slug}',     [\App\Http\Controllers\Api\V1\ProductController::class, 'showByHandle'])->name('products.handle');
+        Route::get('products/{product}/related', [\App\Http\Controllers\Api\V1\ProductController::class, 'related'])->name('products.related');
         Route::get('products/{product}',         [\App\Http\Controllers\Api\V1\ProductController::class, 'show'])->name('products.show');
         Route::get('products',                   [\App\Http\Controllers\Api\V1\ProductController::class, 'index'])->name('products.index');
 
@@ -57,6 +62,13 @@ Route::prefix('v1')
         Route::get('collections/{collection}/products',  [\App\Http\Controllers\Api\V1\CollectionController::class, 'products'])->name('collections.products');
         Route::get('collections/{collection}',           [\App\Http\Controllers\Api\V1\CollectionController::class, 'show'])->name('collections.show');
         Route::get('collections',                        [\App\Http\Controllers\Api\V1\CollectionController::class, 'index'])->name('collections.index');
+
+        // Wishlist (session-based, works for guests and authenticated customers)
+        Route::prefix('wishlist')->as('wishlist.')->group(function () {
+            Route::get('/',           [\App\Http\Controllers\Api\V1\WishlistController::class, 'show'])->name('show');
+            Route::post('toggle',     [\App\Http\Controllers\Api\V1\WishlistController::class, 'toggle'])->name('toggle');
+            Route::delete('/',        [\App\Http\Controllers\Api\V1\WishlistController::class, 'clear'])->name('clear');
+        });
 
         // Cart (optional auth — works for both guests and authenticated customers)
         Route::prefix('cart')->as('cart.')->group(function () {

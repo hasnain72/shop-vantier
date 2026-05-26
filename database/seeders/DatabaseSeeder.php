@@ -42,6 +42,9 @@ class DatabaseSeeder extends Seeder
             // 10. CMS content (no dependencies)
             PageSeeder::class,
             BlogSeeder::class,
+
+            // 11. Home page sections & settings
+            HomePageSeeder::class,
         ]);
     }
 }

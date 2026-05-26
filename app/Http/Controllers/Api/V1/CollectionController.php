@@ -9,12 +9,14 @@ use App\Http\Resources\ProductResource;
 use App\Models\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CollectionController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $limit = min((int) ($request->limit ?? 20), 250);
+        // Accept per_page (frontend) or limit (legacy); default 20, cap 250
+        $limit = min((int) ($request->per_page ?? $request->limit ?? 20), 250);
 
         $query = Collection::withCount('products');
 
@@ -27,6 +29,26 @@ class CollectionController extends Controller
         }
 
         $collections = $query->orderBy('sort_position')->paginate($limit);
+
+        // One extra query: pull one product image per collection to use as thumbnail
+        // when the collection itself has no image set.
+        $ids = $collections->pluck('id');
+        $thumbnails = DB::table('collection_product as cp')
+            ->join('products as p', function ($join) {
+                $join->on('p.id', '=', 'cp.product_id')
+                     ->where('p.status', 'active')
+                     ->whereNull('p.deleted_at');
+            })
+            ->join('product_images as pi', 'pi.product_id', '=', 'p.id')
+            ->whereIn('cp.collection_id', $ids)
+            ->select('cp.collection_id', DB::raw('MIN(pi.src) as src'))
+            ->groupBy('cp.collection_id')
+            ->get()
+            ->keyBy('collection_id');
+
+        $collections->each(function ($c) use ($thumbnails) {
+            $c->thumbnail_src = $thumbnails->get($c->id)?->src ?? null;
+        });
 
         return response()->json([
             'success' => true,

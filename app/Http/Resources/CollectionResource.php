@@ -15,7 +15,9 @@ class CollectionResource extends JsonResource
             'title'          => $this->title,
             'slug'           => $this->slug,
             'description'    => $this->description,
-            'image'          => $this->image ? Storage::disk('public')->url($this->image) : null,
+            'image'          => $this->image
+                                   ? Storage::disk('public')->url($this->image)
+                                   : ($this->thumbnail_src ? Storage::disk('public')->url($this->thumbnail_src) : null),
             'sort_order'     => $this->sort_order,
             'published'      => (bool) $this->published,
             'published_at'   => $this->published_at?->toISOString(),

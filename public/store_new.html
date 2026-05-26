@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop</title>
+<style>
+/* ── RESET & BASE ─────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0c;--surface:#161616;--card:#1e1e1e;--border:#2a2a2a;
+  --gold:#c9a96e;--gold2:#e8cc9a;
+  --text:#f0f0f0;--muted:#888;--danger:#ef4444;--success:#10b981;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+img{display:block;max-width:100%}
+input,select,textarea{font-family:inherit}
+
+/* ── SCROLLBAR ────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── HEADER ───────────────────────────────────────────── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(12,12,12,.95);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:0 40px;height:64px;
+  display:flex;align-items:center;gap:32px;
+}
+.logo{font-size:18px;font-weight:700;letter-spacing:2px;color:var(--gold);cursor:pointer;white-space:nowrap}
+.nav-links{display:flex;gap:24px;flex:1}
+.nav-links a{font-size:13px;color:var(--muted);letter-spacing:.5px;transition:color .2s;cursor:pointer}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.header-right{display:flex;align-items:center;gap:16px;margin-left:auto}
+.search-bar{
+  display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:6px 12px;gap:8px;width:200px;
+}
+.search-bar input{background:none;border:none;color:var(--text);font-size:13px;outline:none;width:100%}
+.search-bar input::placeholder{color:var(--muted)}
+.icon-btn{
+  background:none;border:none;color:var(--muted);font-size:18px;
+  padding:6px;border-radius:6px;transition:color .2s;position:relative;
+}
+.icon-btn:hover{color:var(--text)}
+.cart-badge{
+  position:absolute;top:0;right:0;background:var(--gold);color:#000;
+  font-size:9px;font-weight:700;width:16px;height:16px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+.auth-btn{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  padding:6px 16px;border-radius:6px;font-size:13px;transition:all .2s;
+}
+.auth-btn:hover{border-color:var(--gold);color:var(--gold)}
+.user-name{font-size:13px;color:var(--gold);cursor:pointer}
+
+/* ── MAIN ─────────────────────────────────────────────── */
+#app{min-height:calc(100vh - 64px)}
+.view{display:none}
+.view.active{display:block}
+
+/* ── TOAST ────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:12px 18px;font-size:13px;
+  display:flex;align-items:center;gap:10px;
+  animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);
+  max-width:300px;
+}
+.toast-item.success{border-color:var(--success)}
+.toast-item.error{border-color:var(--danger)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── MODAL OVERLAY ────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:32px;width:100%;max-width:440px;
+  position:relative;
+}
+.modal-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  color:var(--muted);font-size:20px;line-height:1;
+}
+.modal-close:hover{color:var(--text)}
+
+/* ── SHARED UI ────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 24px;border-radius:7px;font-size:14px;font-weight:600;
+  border:none;transition:all .2s;
+}
+.btn-gold{background:var(--gold);color:#000}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.field label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+.field input,.field select,.field textarea{
+  background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:10px 12px;border-radius:7px;font-size:14px;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold)}
+.field textarea{resize:vertical;min-height:80px}
+
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+.section-title{font-size:22px;font-weight:700;letter-spacing:.5px;margin-bottom:4px}
+.section-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
+
+.spinner{
+  width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .7s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty-state{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:16px}
+.empty-state h3{font-size:18px;color:var(--text);margin-bottom:8px}
+
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;display:inline-block;font-weight:600}
+.tag-gold{background:rgba(201,169,110,.15);color:var(--gold)}
+.tag-green{background:rgba(16,185,129,.15);color:var(--success)}
+.tag-red{background:rgba(239,68,68,.15);color:var(--danger)}
+
+/* ── PRODUCT CARD ─────────────────────────────────────── */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.product-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s;
+}
+.product-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.product-card .img-wrap{aspect-ratio:1;background:var(--surface);overflow:hidden}
+.product-card .img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.product-card:hover .img-wrap img{transform:scale(1.05)}
+.product-card .img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--border)}
+.product-card .info{padding:14px 16px}
+.product-card .name{font-size:14px;font-weight:600;margin-bottom:6px;line-height:1.3}
+.product-card .price{font-size:16px;font-weight:700;color:var(--gold)}
+.product-card .compare{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:6px}
+.product-card .cat{font-size:11px;color:var(--muted);margin-bottom:4px}
+
+/* ── PAGINATION ───────────────────────────────────────── */
+.pagination{display:flex;gap:8px;justify-content:center;margin-top:32px;flex-wrap:wrap}
+.page-btn{
+  min-width:36px;height:36px;border-radius:6px;border:1px solid var(--border);
+  background:none;color:var(--muted);font-size:13px;transition:all .2s;
+}
+.page-btn:hover{border-color:var(--gold);color:var(--gold)}
+.page-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* ── BREADCRUMB ───────────────────────────────────────── */
+.breadcrumb{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:20px}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--gold)}
+
+/* ── PAGE CONTENT WRAPPER ─────────────────────────────── */
+.page-wrap{max-width:1200px;margin:0 auto;padding:40px 24px}
+
+/* ── TABS ─────────────────────────────────────────────── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.tab-btn{
+  padding:10px 20px;background:none;border:none;color:var(--muted);
+  font-size:14px;cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all .2s;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── LOADING OVERLAY ──────────────────────────────────── */
+.page-loading{display:flex;justify-content:center;padding:80px;color:var(--muted)}
+
+/* ── FOOTER ───────────────────────────────────────────── */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:40px;text-align:center;color:var(--muted);font-size:13px;margin-top:60px}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header>
+  <div class="logo" onclick="navigate('home')">CHRONOSOUQ</div>
+
+  <nav class="nav-links">
+    <a onclick="navigate('home')" data-route="home">Home</a>
+    <a onclick="navigate('products')" data-route="products">Products</a>
+    <a onclick="navigate('collections')" data-route="collections">Collections</a>
+    <a onclick="navigate('blogs')" data-route="blogs">Blog</a>
+  </nav>
+
+  <div class="header-right">
+    <div class="search-bar">
+      <span style="color:var(--muted);font-size:14px">🔍</span>
+      <input id="global-search" placeholder="Search products..." onkeydown="if(event.key==='Enter')doSearch(this.value)">
+    </div>
+    <button class="icon-btn" onclick="navigate('cart')" title="Cart">
+      🛒
+      <span class="cart-badge" id="cart-count" style="display:none">0</span>
+    </button>
+    <div id="auth-area">
+      <button class="auth-btn" onclick="openAuth()">Login / Register</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ APP VIEWS ════════════════════════════════════════ -->
+<div id="app">
+  <div id="view-home"     class="view active"></div>
+  <div id="view-products" class="view"></div>
+  <div id="view-product"  class="view"></div>
+  <div id="view-collections" class="view"></div>
+  <div id="view-collection"  class="view"></div>
+  <div id="view-cart"     class="view"></div>
+  <div id="view-checkout" class="view"></div>
+  <div id="view-order-success" class="view"></div>
+  <div id="view-account"  class="view"></div>
+  <div id="view-blogs"    class="view"></div>
+  <div id="view-blog"     class="view"></div>
+  <div id="view-search"   class="view"></div>
+</div>
+
+<!-- ═══ AUTH MODAL ══════════════════════════════════════ -->
+<div id="auth-modal" class="modal-overlay">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div class="tabs" style="margin-bottom:24px">
+      <button class="tab-btn active" onclick="switchAuthTab('login',this)">Login</button>
+      <button class="tab-btn" onclick="switchAuthTab('register',this)">Register</button>
+    </div>
+
+    <!-- Login -->
+    <div id="auth-login" class="tab-panel active">
+      <div class="field"><label>Email</label><input id="l-email" type="email" value="ahmed.khan@example.com"></div>
+      <div class="field"><label>Password</label><input id="l-pass" type="password" value="password"></div>
+      <button class="btn btn-gold" style="width:100%" onclick="doLogin()">Login</button>
+    </div>
+
+    <!-- Register -->
+    <div id="auth-register" class="tab-panel">
+      <div class="row-2">
+        <div class="field"><label>First Name</label><input id="r-fn" type="text"></div>
+        <div class="field"><label>Last Name</label><input id="r-ln" type="text"></div>
+      </div>
+      <div class="field"><label>Email</label><input id="r-email" type="email"></div>
+      <div class="field"><label>Phone</label><input id="r-phone" type="text" placeholder="+92..."></div>
+      <div class="row-2">
+        <div class="field"><label>Password</label><input id="r-pass" type="password"></div>
+        <div class="field"><label>Confirm</label><input id="r-cpass" type="password"></div>
+      </div>
+      <button class="btn btn-gold" style="width:100%" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════ -->
+<footer>
+  <div style="display:flex;justify-content:center;gap:28px;margin-bottom:16px;flex-wrap:wrap">
+    <span style="cursor:pointer" onclick="navigate('home')">Home</span>
+    <span style="cursor:pointer" onclick="navigate('products')">Products</span>
+    <span style="cursor:pointer" onclick="navigate('collections')">Collections</span>
+    <span style="cursor:pointer" onclick="navigate('blogs')">Blog</span>
+    <span style="cursor:pointer" onclick="navigate('account')">My Account</span>
+    <span style="cursor:pointer" onclick="navigate('cart')">Cart</span>
+  </div>
+  <p>© 2025 Chronosouq — Premium Watch Accessories</p>
+</footer>
+

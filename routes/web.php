@@ -159,6 +159,37 @@ Route::prefix('admin')->as('admin.')->group(function () {
         // Locations
         Route::resource('locations', \App\Http\Controllers\Admin\LocationController::class)->names('locations');
 
+        // Home Page CMS
+        Route::get('home',                                    [\App\Http\Controllers\Admin\HomePageController::class, 'settings'])->name('home.settings');
+        Route::put('home',                                    [\App\Http\Controllers\Admin\HomePageController::class, 'updateSettings'])->name('home.settings.update');
+        Route::get('home/craft-cards',                        [\App\Http\Controllers\Admin\HomePageController::class, 'craftCards'])->name('home.craft-cards');
+        Route::get('home/craft-cards/create',                 [\App\Http\Controllers\Admin\HomePageController::class, 'createCraftCard'])->name('home.craft-cards.create');
+        Route::post('home/craft-cards',                       [\App\Http\Controllers\Admin\HomePageController::class, 'storeCraftCard'])->name('home.craft-cards.store');
+        Route::get('home/craft-cards/{card}/edit',            [\App\Http\Controllers\Admin\HomePageController::class, 'editCraftCard'])->name('home.craft-cards.edit');
+        Route::put('home/craft-cards/{card}',                 [\App\Http\Controllers\Admin\HomePageController::class, 'updateCraftCard'])->name('home.craft-cards.update');
+        Route::delete('home/craft-cards/{card}',              [\App\Http\Controllers\Admin\HomePageController::class, 'destroyCraftCard'])->name('home.craft-cards.destroy');
+        Route::get('home/workshop',                           [\App\Http\Controllers\Admin\HomePageController::class, 'workshopItems'])->name('home.workshop');
+        Route::get('home/workshop/create',                    [\App\Http\Controllers\Admin\HomePageController::class, 'createWorkshopItem'])->name('home.workshop.create');
+        Route::post('home/workshop',                          [\App\Http\Controllers\Admin\HomePageController::class, 'storeWorkshopItem'])->name('home.workshop.store');
+        Route::get('home/workshop/{item}/edit',               [\App\Http\Controllers\Admin\HomePageController::class, 'editWorkshopItem'])->name('home.workshop.edit');
+        Route::put('home/workshop/{item}',                    [\App\Http\Controllers\Admin\HomePageController::class, 'updateWorkshopItem'])->name('home.workshop.update');
+        Route::delete('home/workshop/{item}',                 [\App\Http\Controllers\Admin\HomePageController::class, 'destroyWorkshopItem'])->name('home.workshop.destroy');
+        Route::post('home/workshop/{item}/toggle',            [\App\Http\Controllers\Admin\HomePageController::class, 'toggleWorkshopItem'])->name('home.workshop.toggle');
+        Route::get('home/reviews',                            [\App\Http\Controllers\Admin\HomePageController::class, 'reviews'])->name('home.reviews');
+        Route::get('home/reviews/create',                     [\App\Http\Controllers\Admin\HomePageController::class, 'createReview'])->name('home.reviews.create');
+        Route::post('home/reviews',                           [\App\Http\Controllers\Admin\HomePageController::class, 'storeReview'])->name('home.reviews.store');
+        Route::get('home/reviews/{review}/edit',              [\App\Http\Controllers\Admin\HomePageController::class, 'editReview'])->name('home.reviews.edit');
+        Route::put('home/reviews/{review}',                   [\App\Http\Controllers\Admin\HomePageController::class, 'updateReview'])->name('home.reviews.update');
+        Route::delete('home/reviews/{review}',                [\App\Http\Controllers\Admin\HomePageController::class, 'destroyReview'])->name('home.reviews.destroy');
+        Route::post('home/reviews/{review}/toggle',           [\App\Http\Controllers\Admin\HomePageController::class, 'toggleReview'])->name('home.reviews.toggle');
+        Route::get('home/faqs',                               [\App\Http\Controllers\Admin\HomePageController::class, 'faqs'])->name('home.faqs');
+        Route::get('home/faqs/create',                        [\App\Http\Controllers\Admin\HomePageController::class, 'createFaq'])->name('home.faqs.create');
+        Route::post('home/faqs',                              [\App\Http\Controllers\Admin\HomePageController::class, 'storeFaq'])->name('home.faqs.store');
+        Route::get('home/faqs/{faq}/edit',                    [\App\Http\Controllers\Admin\HomePageController::class, 'editFaq'])->name('home.faqs.edit');
+        Route::put('home/faqs/{faq}',                         [\App\Http\Controllers\Admin\HomePageController::class, 'updateFaq'])->name('home.faqs.update');
+        Route::delete('home/faqs/{faq}',                      [\App\Http\Controllers\Admin\HomePageController::class, 'destroyFaq'])->name('home.faqs.destroy');
+        Route::post('home/faqs/{faq}/toggle',                 [\App\Http\Controllers\Admin\HomePageController::class, 'toggleFaq'])->name('home.faqs.toggle');
+
         // Webhooks
         Route::get('webhooks',                       [\App\Http\Controllers\Admin\WebhookController::class, 'index'])->name('webhooks.index');
         Route::post('webhooks',                      [\App\Http\Controllers\Admin\WebhookController::class, 'store'])->name('webhooks.store');
