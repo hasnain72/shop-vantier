@@ -10,11 +10,16 @@ class ProductResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $locale = in_array($request->query('locale'), ['ar', 'en']) ? $request->query('locale') : 'en';
+
         return [
             'id'           => $this->id,
-            'title'        => $this->title,
+            'title'        => ($locale === 'ar' && !empty($this->title_ar)) ? $this->title_ar : $this->title,
+            'title_en'     => $this->title,
+            'title_ar'     => $this->title_ar,
             'slug'         => $this->slug,
-            'body_html'    => $this->body_html,
+            'body_html'    => ($locale === 'ar' && !empty($this->body_html_ar)) ? $this->body_html_ar : $this->body_html,
+            'body_html_ar' => $this->body_html_ar,
             'vendor'           => $this->vendor,
             'product_type'     => $this->product_type,
             'product_category' => $this->product_category,

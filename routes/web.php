@@ -190,6 +190,12 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::delete('home/faqs/{faq}',                      [\App\Http\Controllers\Admin\HomePageController::class, 'destroyFaq'])->name('home.faqs.destroy');
         Route::post('home/faqs/{faq}/toggle',                 [\App\Http\Controllers\Admin\HomePageController::class, 'toggleFaq'])->name('home.faqs.toggle');
 
+        // Custom Orders (enquiries from storefront)
+        Route::get('custom-orders',                             [\App\Http\Controllers\Admin\CustomOrderController::class, 'index'])->name('custom-orders.index');
+        Route::get('custom-orders/{customOrder}',               [\App\Http\Controllers\Admin\CustomOrderController::class, 'show'])->name('custom-orders.show');
+        Route::put('custom-orders/{customOrder}',               [\App\Http\Controllers\Admin\CustomOrderController::class, 'update'])->name('custom-orders.update');
+        Route::delete('custom-orders/{customOrder}',            [\App\Http\Controllers\Admin\CustomOrderController::class, 'destroy'])->name('custom-orders.destroy');
+
         // Webhooks
         Route::get('webhooks',                       [\App\Http\Controllers\Admin\WebhookController::class, 'index'])->name('webhooks.index');
         Route::post('webhooks',                      [\App\Http\Controllers\Admin\WebhookController::class, 'store'])->name('webhooks.store');

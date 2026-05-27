@@ -17,12 +17,15 @@ class CartResource extends JsonResource
             $addonPrice = (float) ($item->addon_price ?? 0);
             $unitPrice  = (float) $item->price + $addonPrice;
 
+            $isAddonOnly = $item->addon_id && (float) $item->price === 0.0;
             return [
                 'id'               => $item->id,
                 'variant_id'       => $item->variant_id,
                 'product_id'       => $variant?->product_id,
-                'title'            => $product?->title ?? '—',
-                'variant_title'    => $variant?->title,
+                'title'            => $isAddonOnly
+                    ? ($item->addon?->name ?? $product?->title ?? '—')
+                    : ($product?->title ?? '—'),
+                'variant_title'    => $isAddonOnly ? null : $variant?->title,
                 'sku'              => $variant?->sku,
                 'image'            => $imgPath ? Storage::disk('public')->url($imgPath) : null,
                 'price'            => (float) $item->price,

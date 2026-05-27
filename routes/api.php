@@ -98,6 +98,9 @@ Route::prefix('v1')
         Route::get('shipping/rates',     [\App\Http\Controllers\Api\V1\ShippingController::class, 'rates'])->name('shipping.rates');
         Route::post('shipping/estimate', [\App\Http\Controllers\Api\V1\ShippingController::class, 'estimate'])->name('shipping.estimate');
 
+        // Custom orders (enquiry form from storefront)
+        Route::post('custom-orders', [\App\Http\Controllers\Api\V1\CustomOrderController::class, 'store'])->name('custom-orders.store');
+
         // Search
         Route::get('search', [\App\Http\Controllers\Api\V1\SearchController::class, 'search'])->name('search');
 
@@ -107,7 +110,8 @@ Route::prefix('v1')
         Route::get('blogs',                    [\App\Http\Controllers\Api\V1\CmsController::class, 'blogs'])->name('blogs.index');
         Route::get('blogs/{handle}',           [\App\Http\Controllers\Api\V1\CmsController::class, 'blog'])->name('blogs.show');
         Route::get('blogs/{handle}/articles',  [\App\Http\Controllers\Api\V1\CmsController::class, 'articles'])->name('blogs.articles');
-        Route::get('articles/{id}',            [\App\Http\Controllers\Api\V1\CmsController::class, 'article'])->name('articles.show');
+        Route::get('articles/handle/{slug}',     [\App\Http\Controllers\Api\V1\CmsController::class, 'articleBySlug'])->name('articles.handle');
+        Route::get('articles/{id}',              [\App\Http\Controllers\Api\V1\CmsController::class, 'article'])->name('articles.show');
 
         // Inventory (staff only)
         Route::middleware('auth:sanctum')->prefix('inventory')->as('inventory.')->group(function () {

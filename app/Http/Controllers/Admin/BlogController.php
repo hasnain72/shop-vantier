@@ -20,7 +20,10 @@ class BlogController extends Controller
 
     public function storeBlog(Request $request)
     {
-        $data = $request->validate(['title' => 'required|string|max:255']);
+        $data = $request->validate([
+            'title'    => 'required|string|max:255',
+            'title_ar' => 'nullable|string|max:255',
+        ]);
         $data['slug'] = Str::slug($data['title']);
         Blog::create($data);
         return back()->with('success', 'Blog created.');
@@ -50,8 +53,12 @@ class BlogController extends Controller
     {
         $data = $request->validate([
             'title'            => 'required|string|max:255',
+            'title_ar'         => 'nullable|string|max:255',
             'body_html'        => 'nullable|string',
-            'summary_html'     => 'nullable|string|max:1000',
+            'body_html_ar'     => 'nullable|string',
+            'summary_html'     => 'nullable|string|max:2000',
+            'summary_html_ar'  => 'nullable|string|max:2000',
+            'author_ar'        => 'nullable|string|max:100',
             'tags'             => 'nullable|string',
             'published'        => 'boolean',
             'meta_title'       => 'nullable|string|max:255',
@@ -60,10 +67,14 @@ class BlogController extends Controller
 
         $blog->articles()->create([
             'title'            => $data['title'],
+            'title_ar'         => $data['title_ar'] ?? null,
             'slug'             => Str::slug($data['title']),
             'body_html'        => $data['body_html'] ?? null,
+            'body_html_ar'     => $data['body_html_ar'] ?? null,
             'summary_html'     => $data['summary_html'] ?? null,
+            'summary_html_ar'  => $data['summary_html_ar'] ?? null,
             'author'           => auth()->user()->name,
+            'author_ar'        => $data['author_ar'] ?? null,
             'tags'             => $data['tags'] ? array_map('trim', explode(',', $data['tags'])) : [],
             'published'        => $request->boolean('published'),
             'published_at'     => $request->boolean('published') ? now() : null,
@@ -83,8 +94,12 @@ class BlogController extends Controller
     {
         $data = $request->validate([
             'title'            => 'required|string|max:255',
+            'title_ar'         => 'nullable|string|max:255',
             'body_html'        => 'nullable|string',
-            'summary_html'     => 'nullable|string|max:1000',
+            'body_html_ar'     => 'nullable|string',
+            'summary_html'     => 'nullable|string|max:2000',
+            'summary_html_ar'  => 'nullable|string|max:2000',
+            'author_ar'        => 'nullable|string|max:100',
             'tags'             => 'nullable|string',
             'published'        => 'boolean',
             'meta_title'       => 'nullable|string|max:255',
@@ -93,8 +108,12 @@ class BlogController extends Controller
 
         $article->update([
             'title'            => $data['title'],
+            'title_ar'         => $data['title_ar'] ?? null,
             'body_html'        => $data['body_html'] ?? null,
+            'body_html_ar'     => $data['body_html_ar'] ?? null,
             'summary_html'     => $data['summary_html'] ?? null,
+            'summary_html_ar'  => $data['summary_html_ar'] ?? null,
+            'author_ar'        => $data['author_ar'] ?? null,
             'tags'             => $data['tags'] ? array_map('trim', explode(',', $data['tags'])) : [],
             'published'        => $request->boolean('published'),
             'published_at'     => $request->boolean('published') ? ($article->published_at ?? now()) : null,

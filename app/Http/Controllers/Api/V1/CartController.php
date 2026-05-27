@@ -36,6 +36,7 @@ class CartController extends Controller
             'items.*.variant_id'        => 'required|integer',
             'items.*.quantity'          => 'required|integer|min:1',
             'items.*.addon_id'          => 'nullable|integer|exists:product_addons,id',
+            'items.*.addon_only'        => 'nullable|boolean',
             'items.*.properties'        => 'nullable|array',
         ]);
 
@@ -62,9 +63,14 @@ class CartController extends Controller
                 }
             }
 
+            // addon_only = standalone accessory (no base strap price, just addon price)
+            $addonOnly = !empty($item['addon_only']) && $addon;
+            $itemPrice = $addonOnly ? 0 : (float) $variant->price;
+
             $existing = $cart->items()
                 ->where('variant_id', $item['variant_id'])
                 ->where('addon_id', $addon?->id)
+                ->where('price', $itemPrice)
                 ->first();
 
             if ($existing) {
@@ -73,7 +79,7 @@ class CartController extends Controller
                 $cart->items()->create([
                     'variant_id'  => $item['variant_id'],
                     'quantity'    => $item['quantity'],
-                    'price'       => $variant->price,
+                    'price'       => $itemPrice,
                     'addon_id'    => $addon?->id,
                     'addon_price' => $addonPrice,
                     'properties'  => $item['properties'] ?? null,

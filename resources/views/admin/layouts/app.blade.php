@@ -124,6 +124,18 @@
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('admin.custom-orders.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.custom-orders.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-pen-to-square fa-fw"></i>
+              <span class="admin-label">Custom Orders</span>
+              @php $newCustomOrders = \App\Models\CustomOrder::where('status','new')->count(); @endphp
+              @if($newCustomOrders > 0)
+                <span class="badge text-bg-danger nav-badge ms-auto admin-label">{{ $newCustomOrders }}</span>
+              @endif
+            </a>
+          </li>
+
           {{-- Products group --}}
           <li class="admin-group-label">Catalog</li>
 

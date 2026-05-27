@@ -45,8 +45,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <label class="form-label">Blog title <span class="text-danger">*</span></label>
-          <input name="title" class="form-control" required placeholder="e.g. Watch Care Tips">
+          <div class="mb-3">
+            <label class="form-label">Blog title (English) <span class="text-danger">*</span></label>
+            <input name="title" class="form-control" required placeholder="e.g. Watch Care Tips">
+          </div>
+          <div>
+            <label class="form-label">عنوان المدونة (Arabic)</label>
+            <input name="title_ar" class="form-control" dir="rtl" placeholder="مثال: نصائح العناية بالساعة">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
