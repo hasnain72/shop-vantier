@@ -136,6 +136,18 @@
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('admin.newsletter.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-envelope fa-fw"></i>
+              <span class="admin-label">Newsletter</span>
+              @php $totalSubs = \App\Models\NewsletterSubscriber::where('active', true)->count(); @endphp
+              @if($totalSubs > 0)
+                <span class="badge text-bg-secondary nav-badge ms-auto admin-label">{{ $totalSubs }}</span>
+              @endif
+            </a>
+          </li>
+
           {{-- Products group --}}
           <li class="admin-group-label">Catalog</li>
 
@@ -208,6 +220,13 @@
               class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.home.*') ? 'active' : '' }}">
               <i class="fa-solid fa-house fa-fw"></i>
               <span class="admin-label">Home Page</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.gallery.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-photo-film fa-fw"></i>
+              <span class="admin-label">Media Gallery</span>
             </a>
           </li>
 

@@ -101,6 +101,10 @@ Route::prefix('v1')
         // Custom orders (enquiry form from storefront)
         Route::post('custom-orders', [\App\Http\Controllers\Api\V1\CustomOrderController::class, 'store'])->name('custom-orders.store');
 
+        // Newsletter subscription
+        Route::post('newsletter/subscribe',   [\App\Http\Controllers\Api\V1\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+        Route::post('newsletter/unsubscribe', [\App\Http\Controllers\Api\V1\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+
         // Search
         Route::get('search', [\App\Http\Controllers\Api\V1\SearchController::class, 'search'])->name('search');
 
@@ -112,6 +116,9 @@ Route::prefix('v1')
         Route::get('blogs/{handle}/articles',  [\App\Http\Controllers\Api\V1\CmsController::class, 'articles'])->name('blogs.articles');
         Route::get('articles/handle/{slug}',     [\App\Http\Controllers\Api\V1\CmsController::class, 'articleBySlug'])->name('articles.handle');
         Route::get('articles/{id}',              [\App\Http\Controllers\Api\V1\CmsController::class, 'article'])->name('articles.show');
+
+        // Media Gallery (public read — for Angular image pickers)
+        Route::get('media', [\App\Http\Controllers\Api\V1\MediaController::class, 'index'])->name('media.index');
 
         // Inventory (staff only)
         Route::middleware('auth:sanctum')->prefix('inventory')->as('inventory.')->group(function () {

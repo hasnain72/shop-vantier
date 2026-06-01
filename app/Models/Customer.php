@@ -75,7 +75,8 @@ class Customer extends Authenticatable
 
     public function sendPasswordResetNotification($token): void
     {
-        $resetUrl = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
+        $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:4200')), '/');
+        $resetUrl = $frontendUrl . '/account/reset-password?token=' . urlencode($token) . '&email=' . urlencode($this->email);
         Mail::to($this->email)->send(new CustomerPasswordResetMail($this, $resetUrl));
     }
 

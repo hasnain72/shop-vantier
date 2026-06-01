@@ -196,6 +196,16 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::put('custom-orders/{customOrder}',               [\App\Http\Controllers\Admin\CustomOrderController::class, 'update'])->name('custom-orders.update');
         Route::delete('custom-orders/{customOrder}',            [\App\Http\Controllers\Admin\CustomOrderController::class, 'destroy'])->name('custom-orders.destroy');
 
+        // Newsletter subscribers
+        Route::get('newsletter',                                [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');
+        Route::delete('newsletter/{subscriber}',                [\App\Http\Controllers\Admin\NewsletterController::class, 'destroy'])->name('newsletter.destroy');
+
+        // Media Gallery
+        Route::get('gallery',              [\App\Http\Controllers\Admin\GalleryController::class, 'index'])->name('gallery.index');
+        Route::post('gallery',             [\App\Http\Controllers\Admin\GalleryController::class, 'store'])->name('gallery.store');
+        Route::put('gallery/{galleryFile}', [\App\Http\Controllers\Admin\GalleryController::class, 'update'])->name('gallery.update');
+        Route::delete('gallery/{galleryFile}', [\App\Http\Controllers\Admin\GalleryController::class, 'destroy'])->name('gallery.destroy');
+
         // Webhooks
         Route::get('webhooks',                       [\App\Http\Controllers\Admin\WebhookController::class, 'index'])->name('webhooks.index');
         Route::post('webhooks',                      [\App\Http\Controllers\Admin\WebhookController::class, 'store'])->name('webhooks.store');
