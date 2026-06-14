@@ -10,14 +10,20 @@ return [
     'allowed_methods' => ['*'],
 
     /*
-     * Allow Angular dev server. Add production domain here when deploying.
+     * Allow Angular dev server on any port + production domain.
      */
     'allowed_origins' => [
         'http://localhost:4200',
         'http://127.0.0.1:4200',
+        'https://thevantier.com',
+        'https://www.thevantier.com',
+        'https://www.theventir.chronosouq.com'
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://localhost(:\d+)?$#',
+        '#^http://127\.0\.0\.1(:\d+)?$#',
+    ],
 
     'allowed_headers' => ['*'],
 
