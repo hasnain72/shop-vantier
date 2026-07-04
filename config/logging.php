@@ -65,6 +65,16 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Dedicated channel for API request / exception logs — daily-rotated,
+        // kept separate from laravel.log so it's easy to inspect.
+        'api' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/api.log'),
+            'level'  => env('API_LOG_LEVEL', 'debug'),
+            'days'   => env('API_LOG_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
