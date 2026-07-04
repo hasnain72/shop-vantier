@@ -13,8 +13,10 @@ class CollectionResource extends JsonResource
         return [
             'id'             => $this->id,
             'title'          => $this->title,
+            'title_ar'       => $this->title_ar,
             'slug'           => $this->slug,
             'description'    => $this->description,
+            'description_ar' => $this->description_ar,
             'image'          => $this->image
                                    ? Storage::disk('public')->url($this->image)
                                    : ($this->thumbnail_src ? Storage::disk('public')->url($this->thumbnail_src) : null),

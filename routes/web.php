@@ -137,6 +137,10 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::post('customers/{customer}/deactivate', [\App\Http\Controllers\Admin\CustomerController::class, 'deactivate'])->name('customers.deactivate');
         Route::post('customers/{customer}/activate',   [\App\Http\Controllers\Admin\CustomerController::class, 'activate'])->name('customers.activate');
 
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)
+            ->except(['show'])
+            ->names('users');
+
         // Discounts
         Route::resource('discounts', \App\Http\Controllers\Admin\DiscountController::class)->names('discounts');
         Route::get('discounts/generate-code', [\App\Http\Controllers\Admin\DiscountController::class, 'generateCode'])->name('discounts.generate-code');
@@ -215,6 +219,7 @@ Route::prefix('admin')->as('admin.')->group(function () {
 
         Route::prefix('products/{product}')->as('products.')->group(function () {
             Route::post('variants/bulk-price-update', [\App\Http\Controllers\Admin\ProductVariantController::class, 'bulkPriceUpdate'])->name('variants.bulk-price-update');
+            Route::post('variants/bulk-qty-update',   [\App\Http\Controllers\Admin\ProductVariantController::class, 'bulkQtyUpdate'])->name('variants.bulk-qty-update');
             Route::get('variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'index'])->name('variants.index');
             Route::get('variants/create', [\App\Http\Controllers\Admin\ProductVariantController::class, 'create'])->name('variants.create');
             Route::post('variants', [\App\Http\Controllers\Admin\ProductVariantController::class, 'store'])->name('variants.store');

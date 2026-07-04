@@ -281,7 +281,12 @@
               <input class="form-check-input" type="checkbox" name="collection_ids[]"
                 value="{{ $col->id }}" id="col_{{ $col->id }}"
                 @checked(in_array($col->id, $selectedCols))>
-              <label class="form-check-label" for="col_{{ $col->id }}">{{ $col->title }}</label>
+              <label class="form-check-label" for="col_{{ $col->id }}">
+                {{ $col->title }}
+                @if(!empty($col->title_ar))
+                  <span class="text-secondary" dir="rtl" style="font-size:0.85em;">({{ $col->title_ar }})</span>
+                @endif
+              </label>
             </div>
           @endforeach
           @if($collections->isEmpty())

@@ -191,6 +191,13 @@
             </a>
           </li>
           <li>
+            <a href="{{ route('admin.users.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-user-shield fa-fw"></i>
+              <span class="admin-label">Admin Users</span>
+            </a>
+          </li>
+          <li>
             <a href="{{ route('admin.discounts.index') }}"
               class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.discounts.*') ? 'active' : '' }}">
               <i class="fa-solid fa-tags fa-fw"></i>

@@ -15,7 +15,9 @@ class UpdateCollectionRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'title_ar' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'description_ar' => ['nullable', 'string'],
             'image' => ['nullable', 'string', 'max:2048'],
             'sort_order' => ['required', 'in:manual,best-selling,alpha-asc,alpha-desc,price-asc,price-desc,created-asc,created-desc'],
             'template_suffix' => ['nullable', 'string', 'max:255'],

@@ -53,6 +53,7 @@ Route::prefix('v1')
         Route::get('products/price-range',       [\App\Http\Controllers\Api\V1\ProductController::class, 'priceRange'])->name('products.price-range');
         Route::get('products/handle/{slug}',     [\App\Http\Controllers\Api\V1\ProductController::class, 'showByHandle'])->name('products.handle');
         Route::get('products/{product}/related', [\App\Http\Controllers\Api\V1\ProductController::class, 'related'])->name('products.related');
+        Route::get('products/{product}/compatible-accessories', [\App\Http\Controllers\Api\V1\ProductController::class, 'compatibleAccessories'])->name('products.compatible-accessories');
         Route::get('products/{product}',         [\App\Http\Controllers\Api\V1\ProductController::class, 'show'])->name('products.show');
         Route::get('products',                   [\App\Http\Controllers\Api\V1\ProductController::class, 'index'])->name('products.index');
 

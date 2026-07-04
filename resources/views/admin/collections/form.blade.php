@@ -4,22 +4,81 @@
   {{-- ===== LEFT (8) ===== --}}
   <div class="col-lg-8">
 
-    {{-- Title --}}
+    {{-- Title & Description with EN / AR tabs --}}
     <div class="card border-0 shadow-sm mb-3">
       <div class="card-body">
-        <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
-        <input name="title" class="form-control @error('title') is-invalid @enderror"
-          value="{{ old('title', $collection->title ?? '') }}" placeholder="Summer Sale" required>
-        @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
-      </div>
-    </div>
 
-    {{-- Description --}}
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <label class="form-label fw-semibold">Description</label>
-        <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="5">{{ old('description', $collection->description ?? '') }}</textarea>
-        @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <ul class="nav nav-tabs mb-3" id="collectionLangTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="col-en-tab" data-bs-toggle="tab"
+              data-bs-target="#col-en" type="button" role="tab">🇬🇧 English</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="col-ar-tab" data-bs-toggle="tab"
+              data-bs-target="#col-ar" type="button" role="tab">
+              🇸🇦 Arabic
+              @php $arFilled = !empty(old('title_ar', $collection->title_ar ?? '')); @endphp
+              @if($arFilled)
+                <span class="badge text-bg-success ms-1" style="font-size:0.65rem;">✓</span>
+              @else
+                <span class="badge text-bg-secondary ms-1" style="font-size:0.65rem;">empty</span>
+              @endif
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="collectionLangTabContent">
+
+          {{-- English tab --}}
+          <div class="tab-pane fade show active" id="col-en" role="tabpanel">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+              <input name="title" class="form-control @error('title') is-invalid @enderror"
+                value="{{ old('title', $collection->title ?? '') }}" placeholder="Summer Sale" required>
+              @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-0">
+              <label class="form-label fw-semibold">Description</label>
+              <textarea name="description" id="description"
+                class="form-control @error('description') is-invalid @enderror"
+                rows="5">{{ old('description', $collection->description ?? '') }}</textarea>
+              @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+          </div>
+
+          {{-- Arabic tab --}}
+          <div class="tab-pane fade" id="col-ar" role="tabpanel" dir="rtl">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">العنوان بالعربية</label>
+              <input name="title_ar" class="form-control text-end @error('title_ar') is-invalid @enderror"
+                value="{{ old('title_ar', $collection->title_ar ?? '') }}"
+                placeholder="مثال: تشكيلة الصيف" dir="rtl">
+              @error('title_ar')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-0">
+              <label class="form-label fw-semibold">الوصف بالعربية</label>
+              <textarea name="description_ar" id="description_ar"
+                class="form-control text-end @error('description_ar') is-invalid @enderror"
+                rows="5" dir="rtl">{{ old('description_ar', $collection->description_ar ?? '') }}</textarea>
+              @error('description_ar')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            @php
+              $arDesc = old('description_ar', $collection->description_ar ?? '');
+              $arTitle = old('title_ar', $collection->title_ar ?? '');
+              $arCount = (int)!empty($arTitle) + (int)!empty($arDesc);
+            @endphp
+            <div class="mt-2">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">Arabic translation</small>
+                <small class="text-muted">{{ $arCount }}/2 fields</small>
+              </div>
+              <div class="progress" style="height:4px;">
+                <div class="progress-bar bg-success" style="width:{{ $arCount * 50 }}%"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 

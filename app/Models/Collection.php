@@ -14,8 +14,10 @@ class Collection extends Model
 
     protected $fillable = [
         'title',
+        'title_ar',
         'slug',
         'description',
+        'description_ar',
         'image',
         'sort_order',
         'template_suffix',

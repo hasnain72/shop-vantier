@@ -314,9 +314,17 @@
 
     function updateVariantBulkBtn() {
       const ids = getSelectedVariantIds();
-      const btn = document.getElementById('variantBulkPriceBtn');
+      const priceBtn = document.getElementById('variantBulkPriceBtn');
+      const qtyBtn   = document.getElementById('variantBulkQtyBtn');
       document.getElementById('variantSelectedCount').textContent = ids.length;
-      ids.length > 0 ? btn.classList.remove('d-none') : btn.classList.add('d-none');
+      document.getElementById('variantSelectedCountQty').textContent = ids.length;
+      if (ids.length > 0) {
+        priceBtn.classList.remove('d-none');
+        qtyBtn.classList.remove('d-none');
+      } else {
+        priceBtn.classList.add('d-none');
+        qtyBtn.classList.add('d-none');
+      }
     }
 
     document.getElementById('variantSelectAll').addEventListener('change', function () {
@@ -420,6 +428,88 @@
         btn.textContent = 'Apply';
       }
     }
+
+    // ── Variant Bulk Qty ─────────────────────────────────────
+    const variantBulkQtyUrl = '{{ route('admin.products.variants.bulk-qty-update', $product) }}';
+
+    const vbqAction = document.getElementById('vbqAction');
+    const vbqValue  = document.getElementById('vbqValue');
+
+    vbqAction.addEventListener('change', updateVbqPreview);
+    vbqValue.addEventListener('input', updateVbqPreview);
+
+    document.getElementById('variantBulkQtyModal').addEventListener('show.bs.modal', function () {
+      const ids = getSelectedVariantIds();
+      document.getElementById('vbqSelectedLabel').textContent = ids.length ? ids.length : 'all';
+      document.getElementById('vbqError').classList.add('d-none');
+      document.getElementById('vbqSuccess').classList.add('d-none');
+      document.getElementById('vbqPreview').classList.add('d-none');
+    });
+
+    function updateVbqPreview() {
+      const val  = parseInt(vbqValue.value, 10);
+      const prev = document.getElementById('vbqPreview');
+      if (isNaN(val)) { prev.classList.add('d-none'); return; }
+      const label = vbqAction.value === 'add'
+        ? (val >= 0 ? `Current qty + ${val}` : `Current qty − ${Math.abs(val)}`)
+        : `All selected → ${val}`;
+      prev.textContent = label;
+      prev.classList.remove('d-none');
+    }
+
+    async function applyVariantBulkQty() {
+      const val = parseInt(vbqValue.value, 10);
+      if (isNaN(val)) { alert('Enter a valid whole number.'); return; }
+      if (vbqAction.value === 'set' && val < 0) { alert('Set value cannot be negative.'); return; }
+
+      const ids    = getSelectedVariantIds();
+      const errDiv = document.getElementById('vbqError');
+      const sucDiv = document.getElementById('vbqSuccess');
+      const btn    = document.getElementById('vbqApplyBtn');
+
+      errDiv.classList.add('d-none');
+      sucDiv.classList.add('d-none');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Applying…';
+
+      try {
+        const res = await fetch(variantBulkQtyUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            variant_ids: ids.length ? ids : null,
+            qty_action:  vbqAction.value,
+            qty_value:   val,
+          }),
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Something went wrong.');
+
+        sucDiv.textContent = json.message;
+        sucDiv.classList.remove('d-none');
+
+        (json.variants || []).forEach(v => {
+          const el = document.getElementById(`vqty-${v.id}`);
+          if (el) el.textContent = v.inventory_quantity;
+        });
+
+        document.querySelectorAll('.variant-check').forEach(cb => cb.checked = false);
+        document.getElementById('variantSelectAll').checked = false;
+        updateVariantBulkBtn();
+
+      } catch (err) {
+        errDiv.textContent = err.message;
+        errDiv.classList.remove('d-none');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Apply';
+      }
+    }
   </script>
   @endpush
 
@@ -433,6 +523,11 @@
             data-bs-toggle="modal" data-bs-target="#variantBulkPriceModal">
             <i class="bi bi-tag me-1"></i>Update Price
             <span id="variantSelectedCount" class="badge bg-primary ms-1">0</span>
+          </button>
+          <button class="btn btn-sm btn-outline-info d-none" id="variantBulkQtyBtn"
+            data-bs-toggle="modal" data-bs-target="#variantBulkQtyModal">
+            <i class="bi bi-box-seam me-1"></i>Update Qty
+            <span id="variantSelectedCountQty" class="badge bg-info ms-1">0</span>
           </button>
           <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.products.variants.index', $product) }}">Manage variants</a>
           <a class="btn btn-sm btn-primary" href="{{ route('admin.products.variants.create', $product) }}">Add variant</a>
@@ -460,7 +555,7 @@
                 <td>{{ $variant->title }}</td>
                 <td class="text-secondary">{{ $variant->sku }}</td>
                 <td><span class="variant-price" id="vprice-{{ $variant->id }}">${{ number_format((float)$variant->price, 2) }}</span></td>
-                <td>{{ $variant->inventory_quantity }}</td>
+                <td><span class="variant-qty" id="vqty-{{ $variant->id }}">{{ $variant->inventory_quantity }}</span></td>
                 <td>
                   @if($variant->is_active)
                     <span class="badge text-bg-success">Yes</span>
@@ -518,6 +613,45 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="vbpApplyBtn" onclick="applyVariantBulkPrice()">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- Variant Bulk Qty Modal --}}
+  <div class="modal fade" id="variantBulkQtyModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-box-seam me-1"></i> Bulk Qty Update</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-secondary small mb-3">
+            Updating <strong id="vbqSelectedLabel">all</strong> variant(s) of this product.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Action</label>
+            <select class="form-select" id="vbqAction">
+              <option value="add">Add to existing qty</option>
+              <option value="set">Set exact qty</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Value</label>
+            <input type="number" class="form-control" id="vbqValue" step="1" placeholder="0">
+            <div class="form-text">Use a negative number with "Add" to reduce stock.</div>
+          </div>
+
+          <div id="vbqPreview" class="alert alert-secondary py-2 small d-none"></div>
+          <div id="vbqError"   class="alert alert-danger  py-2 small d-none"></div>
+          <div id="vbqSuccess" class="alert alert-success py-2 small d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-info" id="vbqApplyBtn" onclick="applyVariantBulkQty()">Apply</button>
         </div>
       </div>
     </div>

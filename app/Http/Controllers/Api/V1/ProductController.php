@@ -264,6 +264,48 @@ class ProductController extends Controller
         }
 
         $products = $query
+            ->orderByRaw('(SELECT COUNT(*) FROM product_images WHERE product_images.product_id = products.id) DESC')
+            ->orderBy('sort_position', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->limit($count)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => ['products' => ProductResource::collection($products)],
+            'meta'    => [
+                'pagination' => [
+                    'total'        => $products->count(),
+                    'per_page'     => $count,
+                    'current_page' => 1,
+                    'last_page'    => 1,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Compatible straps / bands for a watch product, used by the "Might also be of
+     * interest" section on the PDP. The catalog has no explicit watch<->strap link
+     * table, so accessories are identified by product_type: anything that isn't a
+     * watch, box, winder, or tool is a strap/band (see product_category "Watch Bands").
+     *
+     * GET /products/{product}/compatible-accessories?count=4
+     */
+    public function compatibleAccessories(Product $product, Request $request): JsonResponse
+    {
+        $count = min((int) ($request->count ?? 4), 20);
+
+        $nonAccessoryTypes = ['Watches', 'Watch Boxes', 'Watch Winders', 'Watch Tools'];
+
+        $products = Product::with(['variants', 'productImages'])
+            ->where('status', 'active')
+            ->where('id', '!=', $product->id)
+            ->where(fn ($q) =>
+                $q->whereNull('product_type')
+                  ->orWhereNotIn('product_type', $nonAccessoryTypes)
+            )
+            ->orderByRaw('(SELECT COUNT(*) FROM product_images WHERE product_images.product_id = products.id) DESC')
             ->orderBy('sort_position', 'asc')
             ->orderBy('created_at', 'desc')
             ->limit($count)

@@ -101,6 +101,55 @@ class ProductVariantController extends Controller
         ]);
     }
 
+    public function bulkQtyUpdate(Request $request, Product $product): JsonResponse
+    {
+        $data = $request->validate([
+            'variant_ids'   => 'nullable|array',
+            'variant_ids.*' => 'integer|exists:product_variants,id',
+            'qty_action'    => 'required|in:add,set',
+            'qty_value'     => 'required|integer',
+        ]);
+
+        if ($data['qty_action'] === 'set' && $data['qty_value'] < 0) {
+            return response()->json(['success' => false, 'message' => 'Set value cannot be negative.'], 422);
+        }
+
+        $query = $product->variants();
+        if (!empty($data['variant_ids'])) {
+            $query->whereIn('id', $data['variant_ids']);
+        }
+
+        $variants = $query->get();
+
+        if ($variants->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No variants found.'], 422);
+        }
+
+        $updated = 0;
+
+        DB::transaction(function () use ($variants, $data, &$updated) {
+            foreach ($variants as $variant) {
+                $current = (int) $variant->inventory_quantity;
+
+                $new = $data['qty_action'] === 'add'
+                    ? $current + (int) $data['qty_value']
+                    : (int) $data['qty_value'];
+
+                $variant->update([
+                    'old_inventory_quantity' => $current,
+                    'inventory_quantity'     => max(0, $new),
+                ]);
+                $updated++;
+            }
+        });
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "{$updated} variant(s) updated.",
+            'variants' => $product->variants()->get(['id', 'title', 'inventory_quantity']),
+        ]);
+    }
+
     public function destroy(Product $product, ProductVariant $variant): RedirectResponse
     {
         abort_unless($variant->product_id === $product->id, 404);
