@@ -8,6 +8,9 @@
     <div class="text-secondary small">{{ $order->created_at->format('F j, Y \a\t H:i') }}</div>
   </div>
   <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statusModal">
+      <i class="bi bi-arrow-repeat me-1"></i>Change status
+    </button>
     @if(!$order->fulfillment_status)
       <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#fulfillModal">Fulfill</button>
     @endif
@@ -288,6 +291,65 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Back</button>
           <button type="submit" class="btn btn-danger">Cancel order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{-- Change Status Modal --}}
+<div class="modal fade" id="statusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ route('admin.orders.status', $order) }}">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-arrow-repeat me-1"></i> Change order status</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-secondary small mb-3">
+            Manually override this order's payment and fulfillment status. Customer will be
+            notified by email if the toggle below is on.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Payment status</label>
+            <select name="financial_status" class="form-select">
+              @php
+                $finStates = ['pending','authorized','partially_paid','paid','partially_refunded','refunded','voided'];
+              @endphp
+              @foreach($finStates as $s)
+                <option value="{{ $s }}" @selected($order->financial_status === $s)>
+                  {{ ucwords(str_replace('_',' ',$s)) }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Fulfillment status</label>
+            <select name="fulfillment_status" class="form-select">
+              @php
+                $curFul = $order->fulfillment_status ?? 'unfulfilled';
+              @endphp
+              @foreach(['unfulfilled' => 'Unfulfilled', 'partial' => 'Partial', 'fulfilled' => 'Fulfilled'] as $val => $label)
+                <option value="{{ $val }}" @selected($curFul === $val)>{{ $label }}</option>
+              @endforeach
+            </select>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="notifyCustomer"
+              name="notify_customer" value="1" checked>
+            <label class="form-check-label" for="notifyCustomer">
+              Email the customer about this status change
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
         </div>
       </form>
     </div>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Events\OrderCancelled;
 use App\Events\OrderCreated;
 use App\Events\OrderFulfilled;
+use App\Events\OrderPaid;
+use App\Events\OrderStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
@@ -167,6 +169,55 @@ class OrderController extends Controller
         return back()->with('success', 'Order fulfilled.');
     }
 
+    public function updateStatus(Request $request, Order $order): RedirectResponse
+    {
+        $data = $request->validate([
+            'financial_status'   => 'nullable|in:pending,authorized,partially_paid,paid,partially_refunded,refunded,voided',
+            'fulfillment_status' => 'nullable|in:unfulfilled,partial,fulfilled',
+            'notify_customer'    => 'nullable|boolean',
+        ]);
+
+        $newFinancial   = $data['financial_status']   ?? $order->financial_status;
+        $newFulfillment = $data['fulfillment_status'] ?? null;
+        // Normalize "unfulfilled" back to null since the DB column is nullable.
+        if ($newFulfillment === 'unfulfilled') {
+            $newFulfillment = null;
+        }
+        // If the fulfillment field wasn't in the request at all, keep the current value.
+        if (!array_key_exists('fulfillment_status', $data)) {
+            $newFulfillment = $order->fulfillment_status;
+        }
+
+        $changes = [];
+        if ($newFinancial !== $order->financial_status) {
+            $changes['financial_status'] = ['old' => $order->financial_status, 'new' => $newFinancial];
+        }
+        if ($newFulfillment !== $order->fulfillment_status) {
+            $changes['fulfillment_status'] = ['old' => $order->fulfillment_status, 'new' => $newFulfillment];
+        }
+
+        if (empty($changes)) {
+            return back()->with('info', 'Nothing to update.');
+        }
+
+        $order->update([
+            'financial_status'   => $newFinancial,
+            'fulfillment_status' => $newFulfillment,
+        ]);
+
+        $notify = (bool) ($data['notify_customer'] ?? false);
+
+        OrderStatusChanged::dispatch($order->fresh(), $changes, $notify);
+
+        // If admin manually flipped payment to paid via this endpoint, also fire the
+        // payment-received email so the customer gets the receipt-style notice.
+        if (isset($changes['financial_status']) && $changes['financial_status']['new'] === 'paid' && $notify) {
+            OrderPaid::dispatch($order->fresh());
+        }
+
+        return back()->with('success', 'Order status updated.');
+    }
+
     public function markAsPaid(Order $order): RedirectResponse
     {
         \App\Models\Transaction::create([
@@ -180,6 +231,8 @@ class OrderController extends Controller
         ]);
 
         $order->update(['financial_status' => 'paid']);
+
+        OrderPaid::dispatch($order->fresh());
 
         return back()->with('success', 'Order marked as paid.');
     }

@@ -123,6 +123,7 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::post('orders/{order}/cancel',    [\App\Http\Controllers\Admin\OrderController::class, 'cancelOrder'])->name('orders.cancel');
         Route::post('orders/{order}/fulfill',   [\App\Http\Controllers\Admin\OrderController::class, 'fulfillOrder'])->name('orders.fulfill');
         Route::post('orders/{order}/mark-paid', [\App\Http\Controllers\Admin\OrderController::class, 'markAsPaid'])->name('orders.mark-paid');
+        Route::post('orders/{order}/status',    [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.status');
         Route::post('orders/{order}/archive',   [\App\Http\Controllers\Admin\OrderController::class, 'archiveOrder'])->name('orders.archive');
         Route::post('orders/{order}/unarchive', [\App\Http\Controllers\Admin\OrderController::class, 'unarchiveOrder'])->name('orders.unarchive');
         Route::get('orders/{order}/print',      [\App\Http\Controllers\Admin\OrderController::class, 'printOrder'])->name('orders.print');
@@ -140,6 +141,11 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)
             ->except(['show'])
             ->names('users');
+
+        Route::get('queue',                 [\App\Http\Controllers\Admin\QueueController::class, 'index'])->name('queue.index');
+        Route::post('queue/run',            [\App\Http\Controllers\Admin\QueueController::class, 'run'])->name('queue.run');
+        Route::post('queue/retry-failed',   [\App\Http\Controllers\Admin\QueueController::class, 'retryFailed'])->name('queue.retry-failed');
+        Route::post('queue/flush-failed',   [\App\Http\Controllers\Admin\QueueController::class, 'flushFailed'])->name('queue.flush-failed');
 
         // Discounts
         Route::resource('discounts', \App\Http\Controllers\Admin\DiscountController::class)->names('discounts');

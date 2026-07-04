@@ -256,6 +256,14 @@
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('admin.queue.index') }}"
+              class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.queue.*') ? 'active' : '' }}">
+              <i class="fa-solid fa-list-check fa-fw"></i>
+              <span class="admin-label">Queue</span>
+            </a>
+          </li>
+
           {{-- Settings group --}}
           <li>
             <button class="nav-link d-flex align-items-center gap-2 w-100 border-0 bg-transparent

@@ -46,7 +46,7 @@
           @endforeach
         </select>
         <div class="form-text">
-          <strong>Super Admin:</strong> full access · <strong>Admin:</strong> full admin panel · <strong>Staff:</strong> limited access.
+          <strong>Super Admin:</strong> full access (protected from demotion) · <strong>Admin:</strong> full admin panel access.
         </div>
       </div>
 

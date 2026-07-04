@@ -14,7 +14,7 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller
 {
     /** Roles that grant admin-panel access. Any user with at least one is treated as an "admin". */
-    private const ADMIN_ROLES = ['super_admin', 'admin', 'staff'];
+    private const ADMIN_ROLES = ['super_admin', 'admin'];
 
     public function index(Request $request): View
     {
