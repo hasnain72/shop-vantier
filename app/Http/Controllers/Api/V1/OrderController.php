@@ -9,12 +9,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function __construct(protected OrderService $service) {}
+    public function __construct(
+        protected OrderService $service,
+        protected PaymentService $paymentService,
+    ) {}
 
     public function store(Request $request): JsonResponse
     {
@@ -31,6 +35,7 @@ class OrderController extends Controller
             'discount_code'    => ['nullable', 'string'],
             'note'             => ['nullable', 'string'],
             'buyer_accepts_marketing' => ['sometimes', 'boolean'],
+            'payment_method'   => ['nullable', 'in:myfatoorah,cod,bank_transfer,stripe,paypal'],
         ]);
 
         if (! $this->service->validateInventory($data['line_items'])) {
@@ -41,8 +46,35 @@ class OrderController extends Controller
 
         OrderCreated::dispatch($order);
 
+        // If a redirect-based gateway was chosen, kick off the payment and surface the URL.
+        $redirectUrl = null;
+        $method = $data['payment_method'] ?? null;
+
+        if ($method === 'myfatoorah') {
+            $addr = $data['shipping_address'] ?? [];
+            $transaction = $this->paymentService->processPayment($order, 'myfatoorah', [
+                'customer_name'  => trim(($addr['first_name'] ?? '') . ' ' . ($addr['last_name'] ?? '')) ?: 'Customer',
+                'customer_email' => $data['email']         ?? null,
+                'customer_mobile'=> $data['phone']         ?? ($addr['phone'] ?? null),
+                'language'       => $request->header('Accept-Language') === 'ar' ? 'ar' : 'en',
+            ]);
+
+            $redirectUrl = $transaction->gateway_response['redirect_url'] ?? null;
+
+            if (!$redirectUrl) {
+                return ApiResponse::error(
+                    $transaction->message ?? 'Payment initiation failed.',
+                    502,
+                    ['order' => new OrderResource($order->fresh()->load(['lineItems', 'transactions']))]
+                );
+            }
+        }
+
         return ApiResponse::success(
-            ['order' => new OrderResource($order->load(['lineItems', 'customer', 'transactions', 'fulfillments']))],
+            [
+                'order'        => new OrderResource($order->load(['lineItems', 'customer', 'transactions', 'fulfillments'])),
+                'redirect_url' => $redirectUrl,
+            ],
             'Order created',
             201
         );

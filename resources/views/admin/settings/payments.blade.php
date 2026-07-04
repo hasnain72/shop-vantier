@@ -68,6 +68,43 @@
     </div>
   </div>
 
+  {{-- MyFatoorah --}}
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <div class="fw-semibold fs-6">MyFatoorah</div>
+          <div class="text-secondary small">Cards + KNet + Apple Pay (Kuwait / MENA)</div>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="payments_myfatoorah_enabled" value="1"
+            id="myfatoorahEnabled" @checked($settings['payments.myfatoorah.enabled'] ?? false)>
+        </div>
+      </div>
+      <div id="myfatoorahFields" class="{{ ($settings['payments.myfatoorah.enabled'] ?? false) ? '' : 'd-none' }}">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label small">Environment</label>
+            <select name="payments_myfatoorah_env" class="form-select form-select-sm">
+              <option value="sandbox" @selected(($settings['payments.myfatoorah.env'] ?? 'sandbox') === 'sandbox')>Sandbox (test)</option>
+              <option value="live"    @selected(($settings['payments.myfatoorah.env'] ?? '') === 'live')>Live (production)</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label small">API Key (Bearer token)</label>
+            <input type="password" name="payments_myfatoorah_api_key" class="form-control form-control-sm"
+              value="{{ $settings['payments.myfatoorah.api_key'] ?? '' }}"
+              placeholder="Paste your MyFatoorah token">
+            <div class="form-text small">
+              Get your token from <a href="https://portal.myfatoorah.com" target="_blank">portal.myfatoorah.com</a>.
+              For quick setup you can also set <code>MYFATOORAH_API_KEY</code> in .env.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {{-- COD --}}
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
@@ -117,5 +154,6 @@
   }
   toggleFields('stripeEnabled', 'stripeFields');
   toggleFields('paypalEnabled', 'paypalFields');
+  toggleFields('myfatoorahEnabled', 'myfatoorahFields');
 </script>
 @endpush

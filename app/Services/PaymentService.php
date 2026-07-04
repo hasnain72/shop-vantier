@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Transaction;
 use App\Services\Payment\BankTransferGateway;
 use App\Services\Payment\CodGateway;
+use App\Services\Payment\MyFatoorahGateway;
 use App\Services\Payment\PaymentGatewayInterface;
 use App\Services\Payment\PayPalGateway;
 use App\Services\Payment\StripeGateway;
@@ -18,6 +19,7 @@ class PaymentService
         return match ($name) {
             'stripe'        => new StripeGateway(),
             'paypal'        => new PayPalGateway(),
+            'myfatoorah'    => new MyFatoorahGateway(),
             'cod'           => new CodGateway(),
             'bank_transfer' => new BankTransferGateway(),
             default         => throw new InvalidArgumentException("Unknown gateway: {$name}"),

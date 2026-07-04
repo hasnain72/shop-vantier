@@ -85,6 +85,10 @@ Route::prefix('v1')
         // Checkout
         Route::post('checkout/validate', [\App\Http\Controllers\Api\V1\CheckoutController::class, 'validate'])->name('checkout.validate');
 
+        // Payment callbacks (browser return + server webhook)
+        Route::get ('payments/myfatoorah/return',  [\App\Http\Controllers\Api\V1\PaymentCallbackController::class, 'myfatoorahReturn'])->name('payments.myfatoorah.return');
+        Route::post('payments/myfatoorah/webhook', [\App\Http\Controllers\Api\V1\PaymentCallbackController::class, 'myfatoorahWebhook'])->name('payments.myfatoorah.webhook');
+
         // Orders
         Route::post('orders', [\App\Http\Controllers\Api\V1\OrderController::class, 'store'])->name('orders.store');
         Route::middleware('auth:customer')->group(function () {
