@@ -4,9 +4,16 @@
 @section('content')
 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
   <div class="h4 mb-0">Reports</div>
-  <div class="d-flex gap-2 align-items-center">
-    <input type="text" id="dateRange" class="form-control form-control-sm" placeholder="Date range" style="width:220px;">
-    <button class="btn btn-sm btn-primary" onclick="loadAll()">Apply</button>
+  <div class="d-flex gap-2 align-items-center flex-wrap">
+    <div class="d-flex align-items-center gap-1">
+      <label for="startDate" class="form-label mb-0 small text-secondary">From</label>
+      <input type="date" id="startDate" class="form-control form-control-sm" style="width:160px;">
+    </div>
+    <div class="d-flex align-items-center gap-1">
+      <label for="endDate" class="form-label mb-0 small text-secondary">To</label>
+      <input type="date" id="endDate" class="form-control form-control-sm" style="width:160px;">
+    </div>
+    <button class="btn btn-sm btn-primary" onclick="applyDateRange()">Apply</button>
   </div>
 </div>
 
@@ -127,33 +134,39 @@
 var salesChart, productsChart, customersChart;
 var startDate = '', endDate = '';
 
-// Init Flatpickr date range
-document.addEventListener('DOMContentLoaded', function () {
-  if (window.flatpickr) {
-    flatpickr('#dateRange', {
-      mode: 'range',
-      dateFormat: 'Y-m-d',
-      defaultDate: [
-        new Date(Date.now() - 29 * 86400000).toISOString().slice(0,10),
-        new Date().toISOString().slice(0,10)
-      ],
-      onChange: function(dates) {
-        if (dates.length === 2) {
-          startDate = dates[0].toISOString().slice(0,10);
-          endDate   = dates[1].toISOString().slice(0,10);
-        }
-      }
-    });
-  }
+// Format a Date in the user's local timezone as YYYY-MM-DD.
+function ymd(date) {
+  var y = date.getFullYear();
+  var m = String(date.getMonth() + 1).padStart(2, '0');
+  var d = String(date.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + d;
+}
 
-  // Set defaults
-  var d = new Date();
-  endDate   = d.toISOString().slice(0,10);
-  d.setDate(d.getDate() - 29);
-  startDate = d.toISOString().slice(0,10);
+document.addEventListener('DOMContentLoaded', function () {
+  // Default: last 90 days.
+  var today = new Date();
+  var start = new Date();
+  start.setDate(start.getDate() - 89);
+
+  var startInput = document.getElementById('startDate');
+  var endInput   = document.getElementById('endDate');
+  startInput.value = ymd(start);
+  endInput.value   = ymd(today);
+  startDate = startInput.value;
+  endDate   = endInput.value;
 
   loadAll();
 });
+
+function applyDateRange() {
+  var s = document.getElementById('startDate').value;
+  var e = document.getElementById('endDate').value;
+  if (!s || !e) { alert('Please pick both From and To dates.'); return; }
+  if (s > e)    { alert('"From" date must be before "To" date.'); return; }
+  startDate = s;
+  endDate   = e;
+  loadAll();
+}
 
 function loadAll() {
   loadSales();
