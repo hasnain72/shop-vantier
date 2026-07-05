@@ -36,6 +36,7 @@ Route::prefix('v1')
             Route::get('me',                                    [\App\Http\Controllers\Api\V1\CustomerController::class, 'me'])->name('me');
             Route::put('me',                                    [\App\Http\Controllers\Api\V1\CustomerController::class, 'updateMe'])->name('me.update');
             Route::get('me/orders',                             [\App\Http\Controllers\Api\V1\CustomerController::class, 'orders'])->name('me.orders');
+            Route::get('me/custom-orders',                      [\App\Http\Controllers\Api\V1\CustomerController::class, 'customOrders'])->name('me.custom-orders');
             Route::get('me/addresses',                          [\App\Http\Controllers\Api\V1\CustomerController::class, 'addresses'])->name('me.addresses');
             Route::post('me/addresses',                         [\App\Http\Controllers\Api\V1\CustomerController::class, 'storeAddress'])->name('me.addresses.store');
             Route::put('me/addresses/{address_id}',             [\App\Http\Controllers\Api\V1\CustomerController::class, 'updateAddress'])->name('me.addresses.update');

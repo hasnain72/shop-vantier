@@ -100,6 +100,44 @@ class CustomerController extends Controller
         return ApiResponse::success(null, 'Default address updated');
     }
 
+    /**
+     * Custom order enquiries by this customer. CustomOrder rows don't carry a
+     * customer_id — they're keyed by email, so we match on the logged-in
+     * customer's email (case-insensitive).
+     */
+    public function customOrders(Request $request): JsonResponse
+    {
+        $customer = $request->user();
+        $limit    = min((int) ($request->limit ?? 10), 50);
+
+        $customOrders = \App\Models\CustomOrder::whereRaw('LOWER(email) = ?', [strtolower($customer->email)])
+            ->latest()
+            ->paginate($limit);
+
+        $data = $customOrders->getCollection()->map(fn ($co) => [
+            'id'         => $co->id,
+            'name'       => $co->name,
+            'email'      => $co->email,
+            'phone'      => $co->phone,
+            'message'    => $co->message,
+            'status'     => $co->status,
+            'created_at' => $co->created_at?->toISOString(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $data,
+            'meta'    => [
+                'pagination' => [
+                    'total'        => $customOrders->total(),
+                    'per_page'     => $customOrders->perPage(),
+                    'current_page' => $customOrders->currentPage(),
+                    'last_page'    => $customOrders->lastPage(),
+                ],
+            ],
+        ]);
+    }
+
     public function orders(Request $request): JsonResponse
     {
         $customer = $request->user();
