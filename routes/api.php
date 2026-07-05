@@ -91,6 +91,8 @@ Route::prefix('v1')
 
         // Orders
         Route::post('orders', [\App\Http\Controllers\Api\V1\OrderController::class, 'store'])->name('orders.store');
+        // Public tracking (guest-friendly) — must be registered before orders/{order}.
+        Route::get('orders/track', [\App\Http\Controllers\Api\V1\OrderController::class, 'track'])->name('orders.track');
         Route::middleware('auth:customer')->group(function () {
             Route::get('orders/{order}',         [\App\Http\Controllers\Api\V1\OrderController::class, 'show'])->name('orders.show');
             Route::post('orders/{order}/cancel', [\App\Http\Controllers\Api\V1\OrderController::class, 'cancel'])->name('orders.cancel');

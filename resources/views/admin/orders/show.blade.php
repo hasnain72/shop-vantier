@@ -237,22 +237,49 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Tracking company</label>
-            <input name="tracking_company" class="form-control" placeholder="DHL, FedEx, TCS…">
+            <label class="form-label fw-semibold">Shipping method</label>
+            <select id="shippingProviderSelect" name="shipping_provider" class="form-select">
+              <option value="manual">Manual (enter tracking number yourself)</option>
+              <option value="smsa">Create SMSA Express shipment automatically</option>
+            </select>
+            <div class="form-text small">
+              SMSA calls the SMSA API to book pickup + generate AWB. Requires PassKey configured under
+              <a href="{{ route('admin.settings.shipping-providers') }}">Settings → Shipping providers</a>.
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Tracking number</label>
-            <input name="tracking_number" class="form-control">
+
+          <div id="manualTrackingFields">
+            <div class="mb-3">
+              <label class="form-label">Tracking company</label>
+              <input name="tracking_company" class="form-control" placeholder="DHL, FedEx, TCS…">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tracking number</label>
+              <input name="tracking_number" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tracking URL</label>
+              <input name="tracking_url" type="url" class="form-control">
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Tracking URL</label>
-            <input name="tracking_url" type="url" class="form-control">
-          </div>
+
           <div class="form-check">
             <input class="form-check-input" type="checkbox" name="notify_customer" id="notify_customer" value="1" checked>
             <label class="form-check-label" for="notify_customer">Send shipment notification to customer</label>
           </div>
         </div>
+        @push('scripts')
+        <script>
+          (function () {
+            const sel  = document.getElementById('shippingProviderSelect');
+            const wrap = document.getElementById('manualTrackingFields');
+            if (!sel || !wrap) return;
+            sel.addEventListener('change', function () {
+              wrap.style.display = this.value === 'smsa' ? 'none' : '';
+            });
+          })();
+        </script>
+        @endpush
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Fulfill order</button>

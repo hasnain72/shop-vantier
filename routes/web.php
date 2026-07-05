@@ -65,6 +65,8 @@ Route::prefix('admin')->as('admin.')->group(function () {
         Route::prefix('settings')->as('settings.')->group(function () {
             Route::get('payments',  [\App\Http\Controllers\Admin\Settings\PaymentSettingsController::class, 'index'])->name('payments');
             Route::put('payments',  [\App\Http\Controllers\Admin\Settings\PaymentSettingsController::class, 'update'])->name('payments.update');
+            Route::get('shipping-providers', [\App\Http\Controllers\Admin\Settings\ShippingProviderSettingsController::class, 'index'])->name('shipping-providers');
+            Route::put('shipping-providers', [\App\Http\Controllers\Admin\Settings\ShippingProviderSettingsController::class, 'update'])->name('shipping-providers.update');
             Route::get('store',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'show'])->name('store');
             Route::put('store',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'update'])->name('store.update');
             Route::get('taxes',         [\App\Http\Controllers\Admin\Settings\StoreSettingsController::class, 'taxes'])->name('taxes');

@@ -2,9 +2,9 @@
 
 namespace App\Services\Payment;
 
+use App\Models\StoreSetting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use RuntimeException;
 
 /**
  * MyFatoorah gateway (Kuwait / MENA card + wallet payments).
@@ -21,9 +21,39 @@ class MyFatoorahGateway implements PaymentGatewayInterface
         return 'myfatoorah';
     }
 
-    public function charge(array $data): array
+    /**
+     * Effective config: values entered in Admin → Settings → Payments (store_settings)
+     * take precedence over .env / config defaults. Blank admin fields fall back to config.
+     */
+    private function settings(): array
     {
         $config = config('payment.myfatoorah');
+
+        $overrides = StoreSetting::whereIn('key', [
+            'payments.myfatoorah.env',
+            'payments.myfatoorah.api_key',
+        ])->pluck('value', 'key');
+
+        if (!empty($overrides['payments.myfatoorah.env']))     $config['env']     = $overrides['payments.myfatoorah.env'];
+        if (!empty($overrides['payments.myfatoorah.api_key'])) $config['api_key'] = $overrides['payments.myfatoorah.api_key'];
+
+        // Derive the hostname from the resolved environment so admins only pick env.
+        // An explicit MYFATOORAH_BASE_URL in .env still wins if set.
+        $envBaseUrl = env('MYFATOORAH_BASE_URL');
+        if ($envBaseUrl) {
+            $config['base_url'] = $envBaseUrl;
+        } else {
+            $config['base_url'] = ($config['env'] ?? 'sandbox') === 'live'
+                ? 'https://api.myfatoorah.com'
+                : 'https://apitest.myfatoorah.com';
+        }
+
+        return $config;
+    }
+
+    public function charge(array $data): array
+    {
+        $config = $this->settings();
 
         if (empty($config['api_key'])) {
             return [
@@ -98,7 +128,7 @@ class MyFatoorahGateway implements PaymentGatewayInterface
     /** Look up the current MF status for a paymentId returned in the browser callback. */
     public function getPaymentStatus(string $paymentId): array
     {
-        $config = config('payment.myfatoorah');
+        $config = $this->settings();
 
         try {
             $response = Http::withToken($config['api_key'])
@@ -121,7 +151,7 @@ class MyFatoorahGateway implements PaymentGatewayInterface
 
     public function refund(string $transactionId, float $amount): array
     {
-        $config = config('payment.myfatoorah');
+        $config = $this->settings();
 
         try {
             $response = Http::withToken($config['api_key'])

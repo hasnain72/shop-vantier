@@ -153,12 +153,28 @@ class OrderController extends Controller
     public function fulfillOrder(Request $request, Order $order): RedirectResponse
     {
         $data = $request->validate([
-            'location_id'      => ['nullable', 'exists:inventory_locations,id'],
-            'tracking_number'  => ['nullable', 'string'],
-            'tracking_company' => ['nullable', 'string'],
-            'tracking_url'     => ['nullable', 'url'],
-            'notify_customer'  => ['sometimes', 'boolean'],
+            'location_id'       => ['nullable', 'exists:inventory_locations,id'],
+            'tracking_number'   => ['nullable', 'string'],
+            'tracking_company'  => ['nullable', 'string'],
+            'tracking_url'      => ['nullable', 'url'],
+            'notify_customer'   => ['sometimes', 'boolean'],
+            'shipping_provider' => ['nullable', 'in:manual,smsa'],
         ]);
+
+        // If admin picked SMSA, call the courier API before we create the fulfillment
+        // row so the returned AWB lands directly on the fulfillment record.
+        if (($data['shipping_provider'] ?? 'manual') === 'smsa') {
+            $provider = app(\App\Services\ShippingProviderService::class)->get('smsa');
+            $result   = $provider->createShipment($order);
+
+            if (!$result['success']) {
+                return back()->with('error', 'SMSA shipment failed: ' . ($result['message'] ?? 'Unknown error.'));
+            }
+
+            $data['tracking_number']  = $result['tracking_number'];
+            $data['tracking_url']     = $result['tracking_url'];
+            $data['tracking_company'] = 'SMSA Express';
+        }
 
         $fulfillment = $this->service->fulfillOrder($order, $data);
 

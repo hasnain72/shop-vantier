@@ -80,6 +80,39 @@ class OrderController extends Controller
         );
     }
 
+    /**
+     * Public order tracking — no login required (guest checkout friendly).
+     * Requires BOTH the order number and the matching email, so orders can't be
+     * enumerated by number alone.
+     *
+     * GET /api/v1/orders/track?order_number=1001&email=a@b.com
+     */
+    public function track(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'order_number' => ['required', 'string'],
+            'email'        => ['required', 'email'],
+        ]);
+
+        // Customers may type "1001", "#WAS1001", or "WAS1001" — match number or name.
+        $needle = ltrim(trim($data['order_number']), '#');
+
+        $order = Order::with(['lineItems', 'fulfillments', 'transactions'])
+            ->where(function ($q) use ($needle) {
+                $q->where('order_number', $needle)
+                  ->orWhere('name', $needle)
+                  ->orWhere('name', '#' . $needle);
+            })
+            ->whereRaw('LOWER(email) = ?', [strtolower(trim($data['email']))])
+            ->first();
+
+        if (!$order) {
+            return ApiResponse::error('No order found with that number and email.', 404);
+        }
+
+        return ApiResponse::success(['order' => new OrderResource($order)]);
+    }
+
     public function show(Request $request, string $identifier): JsonResponse
     {
         $order = Order::with(['lineItems.variant.product', 'customer', 'transactions', 'fulfillments'])

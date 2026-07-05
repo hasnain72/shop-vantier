@@ -288,6 +288,12 @@
                 </a>
               </li>
               <li>
+                <a href="{{ route('admin.settings.shipping-providers') }}"
+                  class="nav-link {{ request()->routeIs('admin.settings.shipping-providers') ? 'active' : '' }}">
+                  Shipping providers
+                </a>
+              </li>
+              <li>
                 <a href="{{ route('admin.shipping.index') }}"
                   class="nav-link {{ request()->routeIs('admin.shipping.*') ? 'active' : '' }}">
                   Shipping
